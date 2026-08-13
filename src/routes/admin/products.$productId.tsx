@@ -14,13 +14,20 @@ import { z } from "zod";
 const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
   category_id: z.string().uuid("Category is required"),
-  media_url: z.string().url("Valid media URL is required"),
+  media_url: z.string().min(1, "Media file is required"),
   media_type: z.enum(["video", "image"]),
   original_price: z.number().min(0),
   discounted_price: z.number().min(0),
 });
 
-type ProductFormValues = z.infer<typeof productSchema>;
+type ProductFormValues = {
+  name: string;
+  category_id: string;
+  media_url: string;
+  media_type: "video" | "image";
+  original_price: number;
+  discounted_price: number;
+};
 
 export const Route = createFileRoute("/admin/products/$productId")({
   component: ProductFormPage,
@@ -116,8 +123,8 @@ function ProductFormPage() {
         .from("product-media")
         .getPublicUrl(filePath);
 
-      form.setValue("media_url", publicUrl);
-      form.setValue("media_type", file.type.startsWith("video") ? "video" : "image");
+      form.setValue("media_url", publicUrl, { shouldValidate: true });
+      form.setValue("media_type", file.type.startsWith("video") ? "video" : "image", { shouldValidate: true });
       toast.success("File uploaded successfully");
     } catch (error: any) {
       toast.error(error.message);
@@ -175,11 +182,19 @@ function ProductFormPage() {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="original_price">Original Price (Strikethrough)</Label>
-            <Input id="original_price" type="number" {...form.register("original_price")} />
+            <Input 
+              id="original_price" 
+              type="number" 
+              {...form.register("original_price", { valueAsNumber: true })} 
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="discounted_price">Discounted Price (Actual)</Label>
-            <Input id="discounted_price" type="number" {...form.register("discounted_price")} />
+            <Input 
+              id="discounted_price" 
+              type="number" 
+              {...form.register("discounted_price", { valueAsNumber: true })} 
+            />
           </div>
         </div>
 
