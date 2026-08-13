@@ -55,6 +55,14 @@ function AdminSettings() {
 
     setLoading(true);
     try {
+      // Refresh session first to ensure it's active
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        toast.error("Auth session missing! Please log in again.");
+        return;
+      }
+
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
       });
