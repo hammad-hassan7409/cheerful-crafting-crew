@@ -4,23 +4,25 @@ export const getStorageUsage = createServerFn({ method: "GET" })
   .handler(async () => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     
-    // In Supabase, we can list files in the bucket and sum their sizes
-    // This is an estimate as listing is paginated, but for a portfolio it's usually enough
     const { data: files, error } = await supabaseAdmin.storage
       .from("product-media")
       .list("", { limit: 1000 });
 
     if (error) {
       console.error("Error listing storage files:", error);
-      return { totalBytes: 0, count: 0 };
+      return { totalBytes: 0, count: 0, formattedSize: "0 Bytes", remainingBytes: 0, remainingFormatted: "256 GB" };
     }
 
     const totalBytes = files?.reduce((acc, file) => acc + (file.metadata?.size || 0), 0) || 0;
+    const limitBytes = 1024 * 1024 * 1024 * 256; // 256GB
+    const remainingBytes = Math.max(0, limitBytes - totalBytes);
     
     return {
       totalBytes,
       count: files?.length || 0,
-      formattedSize: formatBytes(totalBytes)
+      formattedSize: formatBytes(totalBytes),
+      remainingBytes,
+      remainingFormatted: formatBytes(remainingBytes)
     };
   });
 
