@@ -126,26 +126,7 @@ function Index() {
                   >
                     <div className="aspect-[16/9] relative w-full overflow-hidden bg-muted">
                       {product.media_type === "video" ? (
-                        <div className="h-full w-full">
-                          <video
-                            src={product.media_url}
-                            className="h-full w-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500"
-                            muted
-                            playsInline
-                            loop
-                            preload="metadata"
-                            onMouseEnter={(e) => e.currentTarget.play()}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.pause();
-                              e.currentTarget.currentTime = 0;
-                            }}
-                          />
-                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <div className="h-14 w-14 rounded-full bg-primary/90 text-white flex items-center justify-center backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 shadow-xl">
-                              <Play className="fill-current h-6 w-6 ml-1" />
-                            </div>
-                          </div>
-                        </div>
+                        <VideoPreview mediaUrl={product.media_url} />
                       ) : (
                         <Dialog>
                           <DialogTrigger asChild>
