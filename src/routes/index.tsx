@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogIn, Play, Image as ImageIcon, ExternalLink, ChevronRight } from "lucide-react";
+import { LogIn, Play, Image as ImageIcon, ExternalLink, ChevronRight, Loader2 } from "lucide-react";
 import { useState } from "react";
 import {
   Dialog,
