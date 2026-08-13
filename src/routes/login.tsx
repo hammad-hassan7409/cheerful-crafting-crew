@@ -9,6 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { forceResetPassword } from "@/lib/reset.functions";
+import { Loader2 } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -24,6 +27,26 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+
+  const resetPassword = useServerFn(forceResetPassword);
+  const [resetting, setResetting] = useState(false);
+
+  const handleForceReset = async () => {
+    setResetting(true);
+    try {
+      const result = await resetPassword();
+      if (result.success) {
+        toast.info(result.message, { 
+          duration: 10000,
+          description: "Use this password to log in and access your portal."
+        });
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to reset password");
+    } finally {
+      setResetting(false);
+    }
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -94,6 +117,22 @@ function LoginPage() {
               {loading ? "Logging in..." : "Login"}
             </Button>
           </form>
+          <div className="mt-4 pt-4 border-t border-border/50 text-center">
+            <button 
+              onClick={handleForceReset}
+              disabled={resetting}
+              className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center justify-center gap-2 w-full"
+            >
+              {resetting ? (
+                <>
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Resetting to #Cricket...
+                </>
+              ) : (
+                "Restore original password #Cricket"
+              )}
+            </button>
+          </div>
         </CardContent>
       </Card>
     </div>
