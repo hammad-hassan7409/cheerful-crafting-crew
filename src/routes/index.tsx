@@ -29,14 +29,16 @@ export const Route = createFileRoute("/")({
 
 function VideoPreview({ mediaUrl }: { mediaUrl: string }) {
   const [isLoading, setIsLoading] = useState(true);
+  const [progress, setProgress] = useState(0);
 
   return (
     <div className="h-full w-full relative">
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-muted/50 backdrop-blur-sm z-10 transition-opacity duration-300">
-          <div className="flex flex-col items-center gap-3">
+          <div className="flex flex-col items-center gap-3 w-3/4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Loading Media</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Initializing</span>
+            <Progress value={progress} className="h-1 bg-white/10" />
           </div>
         </div>
       )}
@@ -47,7 +49,20 @@ function VideoPreview({ mediaUrl }: { mediaUrl: string }) {
         playsInline
         loop
         preload="metadata"
-        onLoadedData={() => setIsLoading(false)}
+        onProgress={(e) => {
+          const video = e.currentTarget;
+          if (video.buffered.length > 0) {
+            const buffered = video.buffered.end(video.buffered.length - 1);
+            const duration = video.duration;
+            if (duration > 0) {
+              setProgress((buffered / duration) * 100);
+            }
+          }
+        }}
+        onLoadedData={() => {
+          setIsLoading(false);
+          setProgress(100);
+        }}
         onMouseEnter={(e) => !isLoading && e.currentTarget.play()}
         onMouseLeave={(e) => {
           if (!isLoading) {
@@ -69,9 +84,15 @@ function VideoPreview({ mediaUrl }: { mediaUrl: string }) {
 
 function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName: string }) {
   const [isLoading, setIsLoading] = useState(true);
+  const [progress, setProgress] = useState(0);
 
   return (
-    <Dialog onOpenChange={(open) => !open && setIsLoading(true)}>
+    <Dialog onOpenChange={(open) => {
+      if (!open) {
+        setIsLoading(true);
+        setProgress(0);
+      }
+    }}>
       <DialogTrigger asChild>
         <Button variant="secondary" size="icon" className="rounded-xl h-12 w-12 hover:bg-primary hover:text-white transition-colors">
           <Play className="h-5 w-5 fill-current" />
@@ -85,9 +106,10 @@ function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName:
         <div className="relative w-full aspect-video bg-black flex items-center justify-center">
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center z-10">
-              <div className="flex flex-col items-center gap-4">
+              <div className="flex flex-col items-center gap-4 w-1/2">
                 <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                <span className="text-xs font-bold uppercase tracking-tighter text-white/60">Preparing Video</span>
+                <span className="text-xs font-bold uppercase tracking-tighter text-white/60">Buffering Preview</span>
+                <Progress value={progress} className="h-1 bg-white/10" />
               </div>
             </div>
           )}
@@ -98,7 +120,20 @@ function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName:
             autoPlay
             playsInline
             preload="auto"
-            onLoadedData={() => setIsLoading(false)}
+            onProgress={(e) => {
+              const video = e.currentTarget;
+              if (video.buffered.length > 0) {
+                const buffered = video.buffered.end(video.buffered.length - 1);
+                const duration = video.duration;
+                if (duration > 0) {
+                  setProgress((buffered / duration) * 100);
+                }
+              }
+            }}
+            onLoadedData={() => {
+              setIsLoading(false);
+              setProgress(100);
+            }}
           />
         </div>
       </DialogContent>
