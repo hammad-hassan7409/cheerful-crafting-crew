@@ -42,6 +42,8 @@ function ProductFormPage() {
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
   const { data: categories } = useQuery({
     queryKey: ["categories"],
