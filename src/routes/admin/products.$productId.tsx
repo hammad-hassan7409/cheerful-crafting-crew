@@ -14,10 +14,10 @@ import { z } from "zod";
 const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
   category_id: z.string().uuid("Category is required"),
-  media_url: z.string().url("Valid media URL is required"),
+  media_url: z.string().min(1, "Media file is required"),
   media_type: z.enum(["video", "image"]),
-  original_price: z.number().min(0),
-  discounted_price: z.number().min(0),
+  original_price: z.coerce.number().min(0),
+  discounted_price: z.coerce.number().min(0),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
