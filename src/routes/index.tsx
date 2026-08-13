@@ -256,7 +256,7 @@ function Index() {
   });
 
   const handleSendToEditor = (productName: string) => {
-    const phoneNumber = "03021937758";
+    const phoneNumber = "923021937758";
     const message = encodeURIComponent(productName);
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
   };
@@ -353,7 +353,7 @@ function Index() {
           </p>
           <div className="flex gap-6">
             <Button variant="ghost" size="sm" className="text-xs uppercase tracking-widest font-bold" asChild>
-              <a href="https://wa.me/03021937758" target="_blank" rel="noreferrer">
+              <a href="https://wa.me/923021937758" target="_blank" rel="noreferrer">
                 WhatsApp
               </a>
             </Button>
@@ -376,7 +376,7 @@ function ProductCard({ product }: { product: any }) {
   }, [product.media_url, fetchSignedUrl]);
 
   const handleSendToEditor = (productName: string) => {
-    const phoneNumber = "03021937758";
+    const phoneNumber = "923021937758";
     const message = encodeURIComponent(productName);
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
   };
