@@ -18,8 +18,8 @@ const productSchema = z.object({
   category_id: z.string().uuid("Category is required"),
   media_url: z.string().min(1, "Please upload a media file"),
   media_type: z.enum(["video", "image"]),
-  original_price: z.coerce.number().min(0),
-  discounted_price: z.coerce.number().min(0),
+  original_price: z.preprocess((val) => Number(val), z.number().min(0)),
+  discounted_price: z.preprocess((val) => Number(val), z.number().min(0)),
 });
 
 type ProductFormValues = {
