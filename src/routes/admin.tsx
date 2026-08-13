@@ -92,10 +92,10 @@ function AdminLayout() {
               <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-primary transition-all duration-500" 
-                  style={{ width: `${Math.min((storageInfo?.totalBytes || 0) / (1024 * 1024 * 1024 * 5) * 100, 100)}%` }}
+                  style={{ width: `${Math.min((storageInfo?.totalBytes || 0) / (1024 * 1024 * 1024 * 128) * 100, 100)}%` }}
                 />
               </div>
-              <p className="text-[10px] text-muted-foreground italic">Approx. usage of 5GB total</p>
+              <p className="text-[10px] text-muted-foreground italic">Approx. usage of 128GB total</p>
             </div>
           </div>
         </nav>
