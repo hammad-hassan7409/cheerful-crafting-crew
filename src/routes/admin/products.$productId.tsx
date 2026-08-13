@@ -137,7 +137,7 @@ function ProductFormPage() {
   };
 
   const removeMedia = async () => {
-    const mediaUrl = form.getValues("media_url");
+    const mediaUrl = form.getValues("media_url") || "";
     if (!mediaUrl) return;
 
     try {
