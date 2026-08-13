@@ -52,8 +52,8 @@ function AdminSettings() {
       return;
     }
 
-    if (newPassword.length < 8) {
-      toast.error("New password must be at least 8 characters long");
+    if (newPassword.length < 6) {
+      toast.error("New password must be at least 6 characters long");
       return;
     }
 
@@ -102,9 +102,11 @@ function AdminSettings() {
       
       // Specifically handle the "weak_password" error from Supabase
       if (error.code === 'weak_password') {
-        errorMessage = "This password is too common or easy to guess. Please choose a stronger password.";
+        errorMessage = "This password is too common or easy to guess. Please choose a stronger password with a mix of letters, numbers, and symbols.";
       } else if (error.message && error.message.toLowerCase().includes("weak to guess")) {
         errorMessage = "This password is too common or easy to guess. Please choose a stronger password.";
+      } else if (error.status === 400 && error.message.includes("different")) {
+        errorMessage = "New password must be different from the current password.";
       }
       
       toast.error(errorMessage);
