@@ -382,3 +382,97 @@ function Index() {
     </div>
   );
 }
+function ProductCard({ product }: { product: any }) {
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const fetchSignedUrl = useServerFn(getSignedUrl);
+
+  useEffect(() => {
+    let active = true;
+    fetchSignedUrl({ data: { path: product.media_url } }).then(url => {
+      if (active) setSignedUrl(url);
+    });
+    return () => { active = false; };
+  }, [product.media_url, fetchSignedUrl]);
+
+  const handleSendToEditor = (productName: string) => {
+    const phoneNumber = "03021937758";
+    const message = encodeURIComponent(productName);
+    window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
+  };
+
+  return (
+    <div
+      className="group relative flex flex-col rounded-2xl border border-border/50 bg-card/50 transition-all hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 overflow-hidden"
+    >
+      <div className="aspect-[16/9] relative w-full overflow-hidden bg-muted">
+        {product.media_type === "video" ? (
+          <VideoPreview mediaUrl={product.media_url} />
+        ) : (
+          <Dialog>
+            <DialogTrigger asChild>
+              <button className="h-full w-full cursor-zoom-in relative group/image">
+                <ProtectedMedia type="image">
+                  {signedUrl && (
+                    <img
+                      src={signedUrl}
+                      alt={product.name}
+                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                  )}
+                </ProtectedMedia>
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
+                  <ImageIcon className="h-8 w-8 text-white drop-shadow-lg" />
+                </div>
+              </button>
+            </DialogTrigger>
+            <DialogContent className="max-w-[90vw] max-h-[90vh] p-0 overflow-hidden bg-transparent border-none">
+              <ProtectedMedia type="image">
+                {signedUrl && (
+                  <img 
+                    src={signedUrl} 
+                    alt={product.name} 
+                    className="h-full w-full object-contain rounded-lg"
+                  />
+                )}
+              </ProtectedMedia>
+            </DialogContent>
+          </Dialog>
+        )}
+        
+        <div className="absolute top-4 right-4 z-20">
+          <span className="px-3 py-1 rounded-full bg-background/80 backdrop-blur-md text-[10px] font-bold uppercase tracking-widest border border-white/10">
+            {product.media_type === "video" ? "Video Edit" : "Design"}
+          </span>
+        </div>
+      </div>
+
+      <div className="p-6 flex flex-col flex-1">
+        <div className="mb-4">
+          <h3 className="text-xl font-bold mb-1 group-hover:text-primary transition-colors">{product.name}</h3>
+          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Project Sample</p>
+        </div>
+
+        <div className="mt-auto flex items-end justify-between gap-4">
+          <div className="flex flex-col">
+            <span className="text-2xl font-black text-primary">RS. {product.discounted_price}</span>
+            <span className="text-sm text-muted-foreground line-through opacity-60 italic">
+              RS. {product.original_price}
+            </span>
+          </div>
+          
+          {product.media_type === "video" ? (
+            <VideoDialog mediaUrl={product.media_url} productName={product.name} />
+          ) : null}
+        </div>
+
+        <Button
+          className="w-full mt-6 h-12 bg-primary hover:bg-primary/80 text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all hover:shadow-primary/40 flex items-center justify-center gap-2"
+          onClick={() => handleSendToEditor(product.name)}
+        >
+          Send to Editor
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
