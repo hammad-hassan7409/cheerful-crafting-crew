@@ -400,11 +400,20 @@ function ProductFormPage() {
           </div>
         </div>
 
-        <div className="flex gap-4">
-          <Button type="submit" className="flex-1" disabled={mutation.isPending || uploading || (!currentMediaUrl && !!localPreview)}>
+        <div className="flex gap-4 pt-4 border-t">
+          <Button 
+            type="submit" 
+            className="flex-1" 
+            disabled={mutation.isPending || uploading || (!currentMediaUrl && !!localPreview)}
+          >
             {mutation.isPending ? "Saving..." : isNew ? "Create Product" : "Save Changes"}
           </Button>
-          <Button variant="outline" type="button" onClick={() => navigate({ to: "/admin" })}>
+          <Button 
+            variant="outline" 
+            type="button" 
+            disabled={mutation.isPending}
+            onClick={() => navigate({ to: "/admin" })}
+          >
             Cancel
           </Button>
         </div>
