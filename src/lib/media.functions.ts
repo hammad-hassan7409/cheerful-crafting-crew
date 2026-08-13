@@ -8,11 +8,14 @@ export const getSignedUrl = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     
     // Path might be a full URL if it was already saved that way
-    let filePath = data.path;
+    let filePath: string = data.path;
     if (filePath.includes("product-media/")) {
       const parts = filePath.split("product-media/");
-      filePath = parts[parts.length - 1];
+      const lastPart = parts[parts.length - 1];
+      if (!lastPart) throw new Error("Invalid media path");
+      filePath = lastPart;
     }
+
     
     if (!filePath) {
       throw new Error("Invalid media path provided");
