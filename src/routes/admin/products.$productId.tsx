@@ -23,7 +23,7 @@ const productSchema = z.object({
 type ProductFormValues = {
   name: string;
   category_id: string;
-  media_url: string | undefined;
+  media_url?: string | null;
   media_type: "video" | "image";
   original_price: number;
   discounted_price: number;
