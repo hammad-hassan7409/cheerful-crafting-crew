@@ -55,30 +55,51 @@ function AdminSettings() {
 
     setLoading(true);
     try {
-      // Refresh session first to ensure it's active and in sync
+      console.log("Starting password update process...");
+      
+      // 1. First ensure we have a session in the client
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      if (sessionError || !session) {
-        toast.error("Auth session missing! Please log in again.");
+      if (sessionError) {
+        console.error("Session fetch error:", sessionError);
+        toast.error("Error checking session: " + sessionError.message);
+        return;
+      }
+      
+      if (!session) {
+        console.error("No active session found");
+        toast.error("Auth session missing! Please log in again to update your password.");
         return;
       }
 
-      // Perform update
-      const { error } = await supabase.auth.updateUser({
+      console.log("Session verified, updating password for:", session.user.email);
+
+      // 2. Update the user password
+      const { data: updateData, error: updateError } = await supabase.auth.updateUser({
         password: newPassword,
       });
 
-      if (error) throw error;
+      if (updateError) {
+        console.error("Password update error:", updateError);
+        throw updateError;
+      }
 
-      // Force a session refresh after update to ensure storage is updated
-      await supabase.auth.refreshSession();
+      console.log("Password updated successfully in backend");
+
+      // 3. Force a complete refresh of the session to update local storage
+      const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+      
+      if (refreshError) {
+        console.warn("Session refresh after update failed, but password was likely changed:", refreshError);
+        // We don't throw here because the password change might have already worked
+      }
 
       toast.success("Password updated successfully");
       setNewPassword("");
       setConfirmPassword("");
     } catch (error: any) {
-      console.error("Error updating password:", error);
-      toast.error(error.message || "Failed to update password");
+      console.error("Critical error in handleUpdatePassword:", error);
+      toast.error(error.message || "Failed to update password. Please try logging out and back in.");
     } finally {
       setLoading(false);
     }
