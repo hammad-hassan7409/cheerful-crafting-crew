@@ -273,6 +273,26 @@ function ProductFormPage() {
                   <Progress value={uploadProgress} className="h-2" />
                 </div>
               )}
+
+              {uploadError && !uploading && (
+                <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm space-y-2">
+                  <p className="font-medium">Upload Error</p>
+                  <p>{uploadError}</p>
+                  {pendingFile && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        performUpload(pendingFile);
+                      }}
+                      className="bg-background hover:bg-zinc-50 border-destructive/20 text-destructive"
+                    >
+                      Retry Upload
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           )}
           
