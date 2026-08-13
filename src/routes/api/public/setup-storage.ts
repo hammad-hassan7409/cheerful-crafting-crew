@@ -15,7 +15,7 @@ export const Route = createFileRoute('/api/public/setup-storage')({
             fileSizeLimit: 104857600 // 100MB
           });
           
-          if (createError && createError.message !== 'Bucket already exists') {
+          if (createError && !createError.message.includes('already exists')) {
             console.error('[Setup] Create error:', createError);
             return new Response(JSON.stringify({ success: false, error: createError.message }), {
               status: 500,
