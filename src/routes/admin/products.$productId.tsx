@@ -131,6 +131,30 @@ function ProductFormPage() {
       toast.error(error.message);
     } finally {
       setUploading(false);
+      // Reset the file input so it can be used again for the same file if needed
+      e.target.value = "";
+    }
+  };
+
+  const removeMedia = async () => {
+    const mediaUrl = form.getValues("media_url");
+    if (!mediaUrl) return;
+
+    try {
+      // Extract path from public URL
+      const url = new URL(mediaUrl);
+      const pathParts = url.pathname.split("product-media/");
+      if (pathParts.length > 1) {
+        const filePath = pathParts[1];
+        await supabase.storage.from("product-media").remove([filePath]);
+      }
+      
+      form.setValue("media_url", "", { shouldValidate: true });
+      toast.success("Media removed");
+    } catch (error: any) {
+      console.error("Error removing media:", error);
+      // Even if storage delete fails, clear the form field
+      form.setValue("media_url", "", { shouldValidate: true });
     }
   };
 
