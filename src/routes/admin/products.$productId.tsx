@@ -42,6 +42,8 @@ function ProductFormPage() {
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
   const { data: categories } = useQuery({
     queryKey: ["categories"],
@@ -106,18 +108,17 @@ function ProductFormPage() {
     },
   });
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const performUpload = async (file: File) => {
     setUploading(true);
     setUploadProgress(0);
+    setUploadError(null);
+    setPendingFile(file);
+
     try {
       const fileExt = file.name.split(".").pop();
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      // We'll use a simple interval to simulate progress since the basic Supabase JS upload doesn't provide progress events without TUS
       const interval = setInterval(() => {
         setUploadProgress((prev) => {
           if (prev >= 95) return prev;
@@ -130,9 +131,10 @@ function ProductFormPage() {
         .upload(filePath, file);
 
       clearInterval(interval);
-      setUploadProgress(100);
 
       if (uploadError) throw uploadError;
+
+      setUploadProgress(100);
 
       const { data: { publicUrl } } = supabase.storage
         .from("product-media")
@@ -140,14 +142,25 @@ function ProductFormPage() {
 
       form.setValue("media_url", publicUrl, { shouldValidate: true });
       form.setValue("media_type", file.type.startsWith("video") ? "video" : "image", { shouldValidate: true });
+      setPendingFile(null);
       toast.success("File uploaded successfully");
     } catch (error: any) {
-      toast.error(error.message);
+      const msg = error.message || "Failed to upload media. Check your connection and try again.";
+      setUploadError(msg);
+      toast.error(msg);
     } finally {
       setUploading(false);
-      // Reset the file input so it can be used again for the same file if needed
-      e.target.value = "";
     }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Reset the file input
+    e.target.value = "";
+    
+    await performUpload(file);
   };
 
   const removeMedia = async () => {
@@ -258,6 +271,26 @@ function ProductFormPage() {
                     <span>{uploadProgress}%</span>
                   </div>
                   <Progress value={uploadProgress} className="h-2" />
+                </div>
+              )}
+
+              {uploadError && !uploading && (
+                <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm space-y-2">
+                  <p className="font-medium">Upload Error</p>
+                  <p>{uploadError}</p>
+                  {pendingFile && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        performUpload(pendingFile);
+                      }}
+                      className="bg-background hover:bg-zinc-50 border-destructive/20 text-destructive"
+                    >
+                      Retry Upload
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
