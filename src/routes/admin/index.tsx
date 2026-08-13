@@ -46,7 +46,7 @@ function AdminDashboard() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <Button asChild>
-          <Link to="/admin/products/new">Add Product</Link>
+          <Link to="/admin/products/$productId" params={{ productId: "new" }}>Add Product</Link>
         </Button>
       </div>
 
@@ -74,7 +74,7 @@ function AdminDashboard() {
                 <td className="px-4 py-3 text-right">
                   <div className="flex justify-end gap-2">
                     <Button variant="ghost" size="icon" asChild>
-                      <Link to={`/admin/products/${product.id}`}>
+                      <Link to="/admin/products/$productId" params={{ productId: product.id }}>
                         <Edit className="h-4 w-4" />
                       </Link>
                     </Button>

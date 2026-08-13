@@ -16,8 +16,8 @@ const productSchema = z.object({
   category_id: z.string().uuid("Category is required"),
   media_url: z.string().url("Valid media URL is required"),
   media_type: z.enum(["video", "image"]),
-  original_price: z.coerce.number().min(0),
-  discounted_price: z.coerce.number().min(0),
+  original_price: z.number().min(0),
+  discounted_price: z.number().min(0),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -134,7 +134,7 @@ function ProductFormPage() {
         <h1 className="text-3xl font-bold">{isNew ? "Add Product" : "Edit Product"}</h1>
       </div>
 
-      <form onSubmit={form.handleSubmit((v) => mutation.mutate(v))} className="space-y-6">
+      <form onSubmit={form.handleSubmit((v) => mutation.mutate(v as ProductFormValues))} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="name">Product Name</Label>
           <Input id="name" {...form.register("name")} />

@@ -57,7 +57,7 @@ function AdminLayout() {
             </Link>
           </Button>
           <Button variant="ghost" className="w-full justify-start" asChild>
-            <Link to="/admin/products/new">
+            <Link to="/admin/products/$productId" params={{ productId: "new" }}>
               <PlusCircle className="mr-2 h-4 w-4" />
               Add Product
             </Link>
