@@ -212,65 +212,6 @@ function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName:
 }
 
 
-function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName: string }) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [progress, setProgress] = useState(0);
-
-  return (
-    <Dialog onOpenChange={(open) => {
-      if (!open) {
-        setIsLoading(true);
-        setProgress(0);
-      }
-    }}>
-      <DialogTrigger asChild>
-        <Button variant="secondary" size="icon" className="rounded-xl h-12 w-12 hover:bg-primary hover:text-white transition-colors">
-          <Play className="h-5 w-5 fill-current" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-4xl bg-black border-white/10 p-0 overflow-hidden">
-        {/* We hide the title visual while keeping it accessible for screen readers */}
-        <DialogHeader className="sr-only">
-          <DialogTitle>{productName}</DialogTitle>
-        </DialogHeader>
-        
-        <div className="relative w-full aspect-video bg-black flex items-center justify-center">
-          {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center z-10">
-              <div className="flex flex-col items-center gap-4 w-1/2">
-                <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                <span className="text-xs font-bold uppercase tracking-tighter text-white/60">Buffering Preview</span>
-                <Progress value={progress} className="h-1 bg-white/10" />
-              </div>
-            </div>
-          )}
-          <video
-            src={mediaUrl}
-            className={`w-full aspect-video bg-black transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
-            controls
-            autoPlay
-            playsInline
-            preload="auto"
-            onProgress={(e) => {
-              const video = e.currentTarget;
-              if (video.buffered.length > 0) {
-                const buffered = video.buffered.end(video.buffered.length - 1);
-                const duration = video.duration;
-                if (duration > 0) {
-                  setProgress((buffered / duration) * 100);
-                }
-              }
-            }}
-            onLoadedData={() => {
-              setIsLoading(false);
-              setProgress(100);
-            }}
-          />
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 function Index() {
   const navigate = useNavigate();
@@ -397,36 +338,6 @@ function Index() {
                   <ProductCard key={product.id} product={product} />
                 ))}
 
-
-                    <div className="p-6 flex flex-col flex-1">
-                      <div className="mb-4">
-                        <h3 className="text-xl font-bold mb-1 group-hover:text-primary transition-colors">{product.name}</h3>
-                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Project Sample</p>
-                      </div>
-
-                      <div className="mt-auto flex items-end justify-between gap-4">
-                        <div className="flex flex-col">
-                          <span className="text-2xl font-black text-primary">RS. {product.discounted_price}</span>
-                          <span className="text-sm text-muted-foreground line-through opacity-60 italic">
-                            RS. {product.original_price}
-                          </span>
-                        </div>
-                        
-                        {product.media_type === "video" ? (
-                          <VideoDialog mediaUrl={product.media_url} productName={product.name} />
-                        ) : null}
-                      </div>
-
-                      <Button
-                        className="w-full mt-6 h-12 bg-primary hover:bg-primary/80 text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all hover:shadow-primary/40 flex items-center justify-center gap-2"
-                        onClick={() => handleSendToEditor(product.name)}
-                      >
-                        Send to Editor
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
               </div>
             </section>
           );
