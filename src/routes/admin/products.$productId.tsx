@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Trash2, X, Loader2, Play, ImageIcon } from "lucide-react";
+import { Trash2, X, Loader2, Play, ImageIcon, HardDrive } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 import { useServerFn } from "@tanstack/react-start";
 import { getSignedUrl } from "@/lib/media.functions";
+import { getStorageUsage } from "@/lib/storage.functions";
 
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -50,6 +51,13 @@ function ProductFormPage() {
   const [localPreview, setLocalPreview] = useState<string | null>(null);
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const fetchSignedUrl = useServerFn(getSignedUrl);
+  const fetchStorage = useServerFn(getStorageUsage);
+
+  const { data: storageInfo } = useQuery({
+    queryKey: ["storage-usage"],
+    queryFn: () => fetchStorage(),
+    refetchInterval: 30000,
+  });
 
 
   const { data: categories } = useQuery({
@@ -370,16 +378,23 @@ function ProductFormPage() {
               )}
             </div>
           ) : (
-            <div className="space-y-2">
-              <div className="flex items-center justify-center w-full">
-                <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-zinc-300 border-dashed rounded-lg cursor-pointer bg-zinc-50 hover:bg-zinc-100 transition-colors">
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <svg className="w-8 h-8 mb-4 text-zinc-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                      <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-                    </svg>
-                    <p className="mb-2 text-sm text-zinc-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                    <p className="text-xs text-zinc-500">Video or Image (MAX. 400MB)</p>
-                  </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
+                <HardDrive className="h-3.5 w-3.5 text-primary" />
+                <span>Remaining Space: <span className="text-primary font-bold">{storageInfo?.remainingFormatted || "256 GB"}</span></span>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-center w-full">
+              <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-zinc-300 border-dashed rounded-lg cursor-pointer bg-zinc-50 hover:bg-zinc-100 transition-colors">
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <svg className="w-8 h-8 mb-4 text-zinc-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                  </svg>
+                  <p className="mb-2 text-sm text-zinc-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                  <p className="text-xs text-zinc-500">Video or Image (MAX. 400MB)</p>
+                </div>
                   <input 
                     type="file" 
                     className="hidden" 
