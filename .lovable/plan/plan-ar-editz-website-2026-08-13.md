@@ -5,6 +5,7 @@ Build a product-style website for "AR EDITZ" with two categories (Videos, POSTER
 ## User Review Required
 
 > [!IMPORTANT]
+>
 > - The owner account will be set to `ammarhassan1888@gmail.com` with password `#Cricket`.
 > - WhatsApp number is fixed to `03021937758`.
 > - Authentication will be handled via Lovable Cloud (Supabase) but structured for future Firebase transition.
@@ -21,21 +22,22 @@ Build a product-style website for "AR EDITZ" with two categories (Videos, POSTER
 - **Layout**: Navigation bar with "AR EDITZ" branding (Blue/Zinc) and a Login button.
 - **Home Page**: Display products grouped by category.
 - **Product Cards**:
-    - Media preview (Image or Video)
-    - Product Name
-    - Discounted Price (prominent)
-    - Original Price (strikethrough)
-    - "Send to Editor" button (Opens WhatsApp: `https://wa.me/923021937758?text={encoded_name}`)
+  - Media preview (Image or Video)
+  - Product Name
+  - Discounted Price (prominent)
+  - Original Price (strikethrough)
+  - "Send to Editor" button (Opens WhatsApp: `https://wa.me/923021937758?text={encoded_name}`)
 
 ### Backend (Owner Panel)
 
 - **Authentication**: Protected route `/admin` requiring login.
 - **Dashboard**:
-    - Manage Categories (Add/Remove)
-    - Manage Products:
-        - Upload media (Supabase Storage)
-        - Set Name, Prices, Category
-        - List/Edit/Delete existing products
+  - Manage Categories (Add/Remove)
+  - Manage Products:
+    - Upload media (Supabase Storage)
+    - Set Name, Prices, Category
+    - List/Edit/Delete existing products  
+    prices can also be edited
 
 ### Design System
 
@@ -57,10 +59,10 @@ Build a product-style website for "AR EDITZ" with two categories (Videos, POSTER
 3. WhatsApp integration correct? Yes.
 4. Admin panel with specific credentials? Yes.
 5. Dynamic categories? Yes.
-6. Blue + Zinc theme? Yes.
+6. white named (light),black named (dark),(Blue + Zinc combo)named(luxury) themes? Yes.
 
 Confidence Score: 5/5
 
 ## Seed Data
 
-- Categories: "Videos", "POSTERS"
+- Categories: "VIDEOS", "POSTERS"
