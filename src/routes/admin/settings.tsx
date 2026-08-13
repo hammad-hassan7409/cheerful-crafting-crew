@@ -55,7 +55,7 @@ function AdminSettings() {
 
     setLoading(true);
     try {
-      // Refresh session first to ensure it's active
+      // Refresh session first to ensure it's active and in sync
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError || !session) {
@@ -63,11 +63,15 @@ function AdminSettings() {
         return;
       }
 
+      // Perform update
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
       });
 
       if (error) throw error;
+
+      // Force a session refresh after update to ensure storage is updated
+      await supabase.auth.refreshSession();
 
       toast.success("Password updated successfully");
       setNewPassword("");
