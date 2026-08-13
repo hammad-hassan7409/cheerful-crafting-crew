@@ -146,7 +146,9 @@ function ProductFormPage() {
       const pathParts = url.pathname.split("product-media/");
       if (pathParts.length > 1) {
         const filePath = pathParts[1];
-        await supabase.storage.from("product-media").remove([decodeURIComponent(filePath)]);
+        if (filePath) {
+          await supabase.storage.from("product-media").remove([decodeURIComponent(filePath)]);
+        }
       }
       
       form.setValue("media_url", "", { shouldValidate: true });
