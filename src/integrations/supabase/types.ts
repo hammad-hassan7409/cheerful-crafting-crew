@@ -14,7 +14,65 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      categories: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          category_id: string
+          created_at: string
+          discounted_price: number
+          id: string
+          media_type: string
+          media_url: string
+          name: string
+          original_price: number
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          discounted_price: number
+          id?: string
+          media_type: string
+          media_url: string
+          name: string
+          original_price: number
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          discounted_price?: number
+          id?: string
+          media_type?: string
+          media_url?: string
+          name?: string
+          original_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
