@@ -16,6 +16,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as AdminProductsProductIdRouteImport } from './routes/admin/products.$productId'
+import { Route as ApiPublicForceResetRouteImport } from './routes/api/public/force-reset'
 import { Route as ApiPublicSetupStorageRouteImport } from './routes/api/public/setup-storage'
 
 const IndexRoute = IndexRouteImport.update({
@@ -53,6 +54,11 @@ const AdminProductsProductIdRoute = AdminProductsProductIdRouteImport.update({
   path: '/products/$productId',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiPublicForceResetRoute = ApiPublicForceResetRouteImport.update({
+  id: '/api/public/force-reset',
+  path: '/api/public/force-reset',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicSetupStorageRoute = ApiPublicSetupStorageRouteImport.update({
   id: '/api/public/setup-storage',
   path: '/api/public/setup-storage',
@@ -67,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/products/$productId': typeof AdminProductsProductIdRoute
+  '/api/public/force-reset': typeof ApiPublicForceResetRoute
   '/api/public/setup-storage': typeof ApiPublicSetupStorageRoute
 }
 export interface FileRoutesByTo {
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin': typeof AdminIndexRoute
   '/admin/products/$productId': typeof AdminProductsProductIdRoute
+  '/api/public/force-reset': typeof ApiPublicForceResetRoute
   '/api/public/setup-storage': typeof ApiPublicSetupStorageRoute
 }
 export interface FileRoutesById {
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/products/$productId': typeof AdminProductsProductIdRoute
+  '/api/public/force-reset': typeof ApiPublicForceResetRoute
   '/api/public/setup-storage': typeof ApiPublicSetupStorageRoute
 }
 export interface FileRouteTypes {
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/'
     | '/admin/products/$productId'
+    | '/api/public/force-reset'
     | '/api/public/setup-storage'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin'
     | '/admin/products/$productId'
+    | '/api/public/force-reset'
     | '/api/public/setup-storage'
   id:
     | '__root__'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/'
     | '/admin/products/$productId'
+    | '/api/public/force-reset'
     | '/api/public/setup-storage'
   fileRoutesById: FileRoutesById
 }
@@ -125,6 +137,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   LoginRoute: typeof LoginRoute
+  ApiPublicForceResetRoute: typeof ApiPublicForceResetRoute
   ApiPublicSetupStorageRoute: typeof ApiPublicSetupStorageRoute
 }
 
@@ -179,6 +192,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProductsProductIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/api/public/force-reset': {
+      id: '/api/public/force-reset'
+      path: '/api/public/force-reset'
+      fullPath: '/api/public/force-reset'
+      preLoaderRoute: typeof ApiPublicForceResetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/setup-storage': {
       id: '/api/public/setup-storage'
       path: '/api/public/setup-storage'
@@ -209,6 +229,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   LoginRoute: LoginRoute,
+  ApiPublicForceResetRoute: ApiPublicForceResetRoute,
   ApiPublicSetupStorageRoute: ApiPublicSetupStorageRoute,
 }
 export const routeTree = rootRouteImport
