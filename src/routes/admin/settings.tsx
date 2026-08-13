@@ -98,7 +98,16 @@ function AdminSettings() {
       setConfirmPassword("");
     } catch (error: any) {
       console.error("Password update error:", error);
-      toast.error(error.message || "Failed to update password");
+      let errorMessage = error.message || "Failed to update password";
+      
+      // Specifically handle the "weak_password" error from Supabase
+      if (error.code === 'weak_password') {
+        errorMessage = "This password is too common or easy to guess. Please choose a stronger password.";
+      } else if (error.message && error.message.toLowerCase().includes("weak to guess")) {
+        errorMessage = "This password is too common or easy to guess. Please choose a stronger password.";
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
