@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { Progress } from "@/components/ui/progress";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -40,6 +41,7 @@ function ProductFormPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const { data: categories } = useQuery({
     queryKey: ["categories"],
@@ -109,14 +111,26 @@ function ProductFormPage() {
     if (!file) return;
 
     setUploading(true);
+    setUploadProgress(0);
     try {
       const fileExt = file.name.split(".").pop();
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `${fileName}`;
 
+      // We'll use a simple interval to simulate progress since the basic Supabase JS upload doesn't provide progress events without TUS
+      const interval = setInterval(() => {
+        setUploadProgress((prev) => {
+          if (prev >= 95) return prev;
+          return prev + 5;
+        });
+      }, 100);
+
       const { error: uploadError } = await supabase.storage
         .from("product-media")
         .upload(filePath, file);
+
+      clearInterval(interval);
+      setUploadProgress(100);
 
       if (uploadError) throw uploadError;
 
@@ -237,7 +251,15 @@ function ProductFormPage() {
                 accept="image/*,video/*" 
                 disabled={uploading}
               />
-              {uploading && <p className="text-sm text-primary animate-pulse">Uploading...</p>}
+              {uploading && (
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs font-medium">
+                    <span>Uploading...</span>
+                    <span>{uploadProgress}%</span>
+                  </div>
+                  <Progress value={uploadProgress} className="h-2" />
+                </div>
+              )}
             </div>
           )}
           
