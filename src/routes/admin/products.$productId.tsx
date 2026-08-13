@@ -20,7 +20,14 @@ const productSchema = z.object({
   discounted_price: z.coerce.number().min(0),
 });
 
-type ProductFormValues = z.infer<typeof productSchema>;
+type ProductFormValues = {
+  name: string;
+  category_id: string;
+  media_url: string;
+  media_type: "video" | "image";
+  original_price: number;
+  discounted_price: number;
+};
 
 export const Route = createFileRoute("/admin/products/$productId")({
   component: ProductFormPage,
