@@ -32,22 +32,6 @@ export const Route = createFileRoute("/")({
   }),
 });
 
-function Watermark() {
-  return (
-    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 overflow-hidden opacity-10 select-none">
-      <div className="flex flex-col gap-4 -rotate-12">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="flex gap-12 whitespace-nowrap">
-            {Array.from({ length: 4 }).map((_, j) => (
-              <span key={j} className="text-4xl font-black italic tracking-tighter">AR EDITZ</span>
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function ProtectedMedia({ children, type = "video" }: { children: ReactNode; type?: "video" | "image" }) {
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -64,9 +48,6 @@ function ProtectedMedia({ children, type = "video" }: { children: ReactNode; typ
     >
       {/* Invisible guard overlay for images to prevent "Save as" dragging */}
       {type === "image" && <div className="absolute inset-0 z-10 bg-transparent" />}
-      
-      {/* Subtle watermark */}
-      <Watermark />
       
       {children}
     </div>
