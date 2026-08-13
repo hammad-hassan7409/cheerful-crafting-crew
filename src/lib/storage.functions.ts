@@ -15,9 +15,10 @@ export const getStorageUsage = createServerFn({ method: "GET" })
         try {
           const url = new URL(p.media_url);
           const pathParts = url.pathname.split("product-media/");
-          if (pathParts.length > 1) {
-            usedPaths.add(decodeURIComponent(pathParts[1]));
-          }
+            const filePath = pathParts[1];
+            if (filePath) {
+              usedPaths.add(decodeURIComponent(filePath));
+            }
         } catch (e) {}
       }
     });
