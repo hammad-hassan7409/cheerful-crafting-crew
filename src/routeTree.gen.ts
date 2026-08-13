@@ -14,6 +14,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
+import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as AdminProductsProductIdRouteImport } from './routes/admin/products.$productId'
 import { Route as ApiPublicSetupStorageRouteImport } from './routes/api/public/setup-storage'
 
@@ -42,6 +43,11 @@ const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
   path: '/categories',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminProductsProductIdRoute = AdminProductsProductIdRouteImport.update({
   id: '/products/$productId',
   path: '/products/$productId',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/products/$productId': typeof AdminProductsProductIdRoute
   '/api/public/setup-storage': typeof ApiPublicSetupStorageRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin': typeof AdminIndexRoute
   '/admin/products/$productId': typeof AdminProductsProductIdRoute
   '/api/public/setup-storage': typeof ApiPublicSetupStorageRoute
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/products/$productId': typeof AdminProductsProductIdRoute
   '/api/public/setup-storage': typeof ApiPublicSetupStorageRoute
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/login'
     | '/admin/categories'
+    | '/admin/settings'
     | '/admin/'
     | '/admin/products/$productId'
     | '/api/public/setup-storage'
@@ -95,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/admin/categories'
+    | '/admin/settings'
     | '/admin'
     | '/admin/products/$productId'
     | '/api/public/setup-storage'
@@ -104,6 +115,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/login'
     | '/admin/categories'
+    | '/admin/settings'
     | '/admin/'
     | '/admin/products/$productId'
     | '/api/public/setup-storage'
@@ -153,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCategoriesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/products/$productId': {
       id: '/admin/products/$productId'
       path: '/products/$productId'
@@ -172,12 +191,14 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminCategoriesRoute: typeof AdminCategoriesRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminProductsProductIdRoute: typeof AdminProductsProductIdRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminCategoriesRoute: AdminCategoriesRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminProductsProductIdRoute: AdminProductsProductIdRoute,
 }
