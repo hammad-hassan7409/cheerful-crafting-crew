@@ -36,7 +36,10 @@ function LoginPage() {
     try {
       const result = await resetPassword();
       if (result.success) {
-        toast.success(result.message, { duration: 6000 });
+        toast.info(result.message, { 
+          duration: 10000,
+          description: "Use this password to log in and access your portal."
+        });
       }
     } catch (error: any) {
       toast.error(error.message || "Failed to reset password");
