@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Trash2, X } from "lucide-react";
+import { Trash2, X, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -418,7 +418,12 @@ function ProductFormPage() {
             className="flex-1" 
             disabled={mutation.isPending || uploading || (!currentMediaUrl && !!localPreview)}
           >
-            {mutation.isPending ? "Saving..." : isNew ? "Create Product" : "Save Changes"}
+            {mutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : isNew ? "Create Product" : "Save Changes"}
           </Button>
           <Button 
             variant="outline" 

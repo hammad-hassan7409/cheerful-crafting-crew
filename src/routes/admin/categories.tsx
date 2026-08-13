@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Trash2 } from "lucide-react";
+import { Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 
@@ -72,7 +72,8 @@ function CategoriesPage() {
             onChange={(e) => setNewCategory(e.target.value)}
           />
         </div>
-        <Button onClick={() => addMutation.mutate(newCategory)} disabled={!newCategory}>
+        <Button onClick={() => addMutation.mutate(newCategory)} disabled={!newCategory || addMutation.isPending}>
+          {addMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Add Category
         </Button>
       </div>
@@ -86,13 +87,14 @@ function CategoriesPage() {
                 variant="ghost"
                 size="icon"
                 className="text-destructive"
+                disabled={deleteMutation.isPending}
                 onClick={() => {
                   if (confirm("Are you sure? This will delete all products in this category.")) {
                     deleteMutation.mutate(category.id);
                   }
                 }}
               >
-                <Trash2 className="h-4 w-4" />
+                {deleteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
               </Button>
             </li>
           ))}
