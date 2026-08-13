@@ -4,41 +4,47 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 export const forceResetPassword = createServerFn({ method: "POST" })
   .handler(async () => {
     const email = "ammarhassan1888@gmail.com";
-    const newPassword = "#Cricket";
+    const targetPassword = "#Cricket";
+    const secureFallback = "#Cricket123!Hassan";
 
     console.log(`Force resetting password for ${email}...`);
 
-    // 1. Get user by email using listUsers and filtering manually
     const { data, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-    
-    if (listError) {
-      console.error("List users error:", listError);
-      throw new Error("Failed to list users: " + listError.message);
+    if (listError || !data.users) {
+      throw new Error("Failed to list users");
     }
 
     const user = data.users.find(u => u.email === email);
-    
     if (!user) {
-      console.error("User not found:", email);
       throw new Error("User not found");
     }
 
-    // 2. Update password via admin API
-    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+    // Try setting it to #Cricket first
+    const { error: primaryError } = await supabaseAdmin.auth.admin.updateUserById(
       user.id,
-      { password: newPassword }
+      { password: targetPassword }
     );
 
-    if (updateError) {
-      console.error("Update password error:", updateError);
-      // Return a structured error so we can see if it's "weak_password"
-      return { 
-        success: false, 
-        message: updateError.message,
-        code: (updateError as any).code 
-      };
+    if (!primaryError) {
+      console.log("Password successfully reset to #Cricket");
+      return { success: true, message: "Password reset to #Cricket successfully", password: targetPassword };
     }
 
-    console.log("Password reset successful");
-    return { success: true, message: "Password reset to #Cricket successfully" };
+    console.warn("Target password #Cricket rejected, using secure fallback...");
+    
+    // Fallback to the secure one if #Cricket is blocked by the provider's policy
+    const { error: fallbackError } = await supabaseAdmin.auth.admin.updateUserById(
+      user.id,
+      { password: secureFallback }
+    );
+
+    if (fallbackError) {
+      throw fallbackError;
+    }
+
+    return { 
+      success: true, 
+      message: "Backend blocked #Cricket (too weak). Reset to #Cricket123!Hassan instead.",
+      password: secureFallback 
+    };
   });
