@@ -70,10 +70,12 @@ function AdminSettings() {
     setCreatingAdmin(true);
     try {
       await createAdmin({
-        email: adminEmail,
-        password: adminPassword,
-        ownerEmail: "ammarhassan1888@gmail.com",
-        ownerPassword: ownerPassword,
+        data: {
+          email: adminEmail,
+          password: adminPassword,
+          ownerEmail: "ammarhassan1888@gmail.com",
+          ownerPassword: ownerPassword,
+        }
       });
 
       toast.success("New admin created successfully");
