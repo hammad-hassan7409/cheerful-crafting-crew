@@ -25,24 +25,45 @@ function AdminLayout() {
   });
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
+    let mounted = true;
+
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (!mounted) return;
+        
+        if (error || !session) {
+          console.error("No active session found in AdminLayout:", error);
+          navigate({ to: "/login" });
+        } else {
+          setSession(session);
+        }
+      } catch (err) {
+        console.error("Unexpected session check error:", err);
+        if (mounted) navigate({ to: "/login" });
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    checkSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return;
+      
+      console.log("Auth state change in AdminLayout:", event, !!session);
+      
+      if (!session && event !== 'INITIAL_SESSION') {
         navigate({ to: "/login" });
-      } else {
+      } else if (session) {
         setSession(session);
       }
-      setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        navigate({ to: "/login" });
-      } else {
-        setSession(session);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const handleLogout = async () => {
