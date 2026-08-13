@@ -387,16 +387,28 @@ function ProductFormPage() {
             <Input 
               id="original_price" 
               type="number" 
-              {...form.register("original_price", { valueAsNumber: true })} 
+              {...form.register("original_price", { 
+                valueAsNumber: true,
+                required: "Original price is required"
+              })} 
             />
+            {form.formState.errors.original_price && (
+              <p className="text-sm text-destructive">{form.formState.errors.original_price.message}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="discounted_price">Discounted Price (Actual)</Label>
             <Input 
               id="discounted_price" 
               type="number" 
-              {...form.register("discounted_price", { valueAsNumber: true })} 
+              {...form.register("discounted_price", { 
+                valueAsNumber: true,
+                required: "Discounted price is required"
+              })} 
             />
+            {form.formState.errors.discounted_price && (
+              <p className="text-sm text-destructive">{form.formState.errors.discounted_price.message}</p>
+            )}
           </div>
         </div>
 
