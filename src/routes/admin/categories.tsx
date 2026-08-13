@@ -87,13 +87,14 @@ function CategoriesPage() {
                 variant="ghost"
                 size="icon"
                 className="text-destructive"
+                disabled={deleteMutation.isPending}
                 onClick={() => {
                   if (confirm("Are you sure? This will delete all products in this category.")) {
                     deleteMutation.mutate(category.id);
                   }
                 }}
               >
-                <Trash2 className="h-4 w-4" />
+                {deleteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
               </Button>
             </li>
           ))}
