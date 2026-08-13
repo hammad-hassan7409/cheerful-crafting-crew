@@ -1,14 +1,25 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, KeyRound, UserPlus, ShieldAlert } from "lucide-react";
-import { createAdminUser } from "@/lib/admin.functions";
+import { Loader2, KeyRound, UserPlus, ShieldAlert, Trash2, Users } from "lucide-react";
+import { createAdminUser, listAdminUsers, deleteAdminUser } from "@/lib/admin.functions";
 import { useServerFn } from "@tanstack/react-start";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/admin/settings")({
   component: AdminSettings,
