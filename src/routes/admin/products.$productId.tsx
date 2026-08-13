@@ -18,7 +18,7 @@ const productSchema = z.object({
   media_type: z.enum(["video", "image"]),
   original_price: z.coerce.number().min(0),
   discounted_price: z.coerce.number().min(0),
-}) as z.ZodType<any>;
+});
 
 type ProductFormValues = z.infer<typeof productSchema>;
 
