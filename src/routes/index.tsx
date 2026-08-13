@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogIn, Play, Image as ImageIcon, ExternalLink, ChevronRight } from "lucide-react";
+import { LogIn, Play, Image as ImageIcon, ExternalLink, ChevronRight, Loader2 } from "lucide-react";
 import { useState } from "react";
 import {
   Dialog,
@@ -25,6 +25,85 @@ export const Route = createFileRoute("/")({
     ],
   }),
 });
+
+function VideoPreview({ mediaUrl }: { mediaUrl: string }) {
+  const [isLoading, setIsLoading] = useState(true);
+
+  return (
+    <div className="h-full w-full relative">
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-muted/50 backdrop-blur-sm z-10 transition-opacity duration-300">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Loading Media</span>
+          </div>
+        </div>
+      )}
+      <video
+        src={mediaUrl}
+        className={`h-full w-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+        muted
+        playsInline
+        loop
+        preload="metadata"
+        onLoadedData={() => setIsLoading(false)}
+        onMouseEnter={(e) => !isLoading && e.currentTarget.play()}
+        onMouseLeave={(e) => {
+          if (!isLoading) {
+            e.currentTarget.pause();
+            e.currentTarget.currentTime = 0;
+          }
+        }}
+      />
+      {!isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="h-14 w-14 rounded-full bg-primary/90 text-white flex items-center justify-center backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 shadow-xl">
+            <Play className="fill-current h-6 w-6 ml-1" />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName: string }) {
+  const [isLoading, setIsLoading] = useState(true);
+
+  return (
+    <Dialog onOpenChange={(open) => !open && setIsLoading(true)}>
+      <DialogTrigger asChild>
+        <Button variant="secondary" size="icon" className="rounded-xl h-12 w-12 hover:bg-primary hover:text-white transition-colors">
+          <Play className="h-5 w-5 fill-current" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl bg-black border-white/10 p-0 overflow-hidden">
+        <DialogHeader className="absolute top-0 left-0 right-0 p-4 z-20 bg-gradient-to-b from-black/80 to-transparent">
+          <DialogTitle className="text-white font-bold">{productName}</DialogTitle>
+        </DialogHeader>
+        
+        <div className="relative w-full aspect-video bg-black flex items-center justify-center">
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center z-10">
+              <div className="flex flex-col items-center gap-4">
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                <span className="text-xs font-bold uppercase tracking-tighter text-white/60">Preparing Video</span>
+              </div>
+            </div>
+          )}
+          <video
+            src={mediaUrl}
+            className={`w-full aspect-video bg-black transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+            controls
+            autoPlay
+            playsInline
+            preload="auto"
+            onLoadedData={() => setIsLoading(false)}
+          />
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function Index() {
   const navigate = useNavigate();
@@ -126,26 +205,7 @@ function Index() {
                   >
                     <div className="aspect-[16/9] relative w-full overflow-hidden bg-muted">
                       {product.media_type === "video" ? (
-                        <div className="h-full w-full">
-                          <video
-                            src={product.media_url}
-                            className="h-full w-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500"
-                            muted
-                            playsInline
-                            loop
-                            preload="metadata"
-                            onMouseEnter={(e) => e.currentTarget.play()}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.pause();
-                              e.currentTarget.currentTime = 0;
-                            }}
-                          />
-                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <div className="h-14 w-14 rounded-full bg-primary/90 text-white flex items-center justify-center backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 shadow-xl">
-                              <Play className="fill-current h-6 w-6 ml-1" />
-                            </div>
-                          </div>
-                        </div>
+                        <VideoPreview mediaUrl={product.media_url} />
                       ) : (
                         <Dialog>
                           <DialogTrigger asChild>
@@ -192,26 +252,7 @@ function Index() {
                         </div>
                         
                         {product.media_type === "video" ? (
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button variant="secondary" size="icon" className="rounded-xl h-12 w-12 hover:bg-primary hover:text-white transition-colors">
-                                <Play className="h-5 w-5 fill-current" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-4xl bg-black border-white/10 p-0 overflow-hidden">
-                              <DialogHeader className="absolute top-0 left-0 right-0 p-4 z-10 bg-gradient-to-b from-black/80 to-transparent">
-                                <DialogTitle className="text-white font-bold">{product.name}</DialogTitle>
-                              </DialogHeader>
-                              <video
-                                src={product.media_url}
-                                className="w-full aspect-video bg-black"
-                                controls
-                                autoPlay
-                                playsInline
-                                preload="auto"
-                              />
-                            </DialogContent>
-                          </Dialog>
+                          <VideoDialog mediaUrl={product.media_url} productName={product.name} />
                         ) : null}
                       </div>
 
