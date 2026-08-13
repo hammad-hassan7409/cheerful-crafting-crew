@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Trash2, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -130,6 +131,32 @@ function ProductFormPage() {
       toast.error(error.message);
     } finally {
       setUploading(false);
+      // Reset the file input so it can be used again for the same file if needed
+      e.target.value = "";
+    }
+  };
+
+  const removeMedia = async () => {
+    const mediaUrl = form.getValues("media_url") || "";
+    if (!mediaUrl) return;
+
+    try {
+      // Extract path from public URL
+      const url = new URL(mediaUrl);
+      const pathParts = url.pathname.split("product-media/");
+      if (pathParts.length > 1) {
+        const filePath = pathParts[1];
+        if (filePath) {
+          await supabase.storage.from("product-media").remove([decodeURIComponent(filePath)]);
+        }
+      }
+      
+      form.setValue("media_url", "", { shouldValidate: true });
+      toast.success("Media removed");
+    } catch (error: any) {
+      console.error("Error removing media:", error);
+      // Even if storage delete fails, clear the form field
+      form.setValue("media_url", "", { shouldValidate: true });
     }
   };
 
@@ -169,10 +196,51 @@ function ProductFormPage() {
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="file">Media File (Image or Video)</Label>
-          <Input id="file" type="file" onChange={handleFileUpload} accept="image/*,video/*" />
-          {uploading && <p className="text-sm text-primary">Uploading...</p>}
+        <div className="space-y-4">
+          <Label>Media File (Image or Video)</Label>
+          
+          {form.watch("media_url") ? (
+            <div className="relative group rounded-lg overflow-hidden border border-zinc-200 aspect-video bg-zinc-50">
+              {form.watch("media_type") === "video" ? (
+                <video 
+                  src={form.watch("media_url")} 
+                  className="w-full h-full object-contain"
+                  controls
+                />
+              ) : (
+                <img 
+                  src={form.watch("media_url")} 
+                  alt="Product preview" 
+                  className="w-full h-full object-contain"
+                />
+              )}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button 
+                  variant="destructive" 
+                  size="icon" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    removeMedia();
+                  }}
+                  type="button"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Input 
+                id="file" 
+                type="file" 
+                onChange={handleFileUpload} 
+                accept="image/*,video/*" 
+                disabled={uploading}
+              />
+              {uploading && <p className="text-sm text-primary animate-pulse">Uploading...</p>}
+            </div>
+          )}
+          
           <Input type="hidden" {...form.register("media_url")} />
           {form.formState.errors.media_url && (
             <p className="text-sm text-destructive">{form.formState.errors.media_url.message}</p>
