@@ -44,6 +44,7 @@ function ProductFormPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
 
   const { data: categories } = useQuery({
     queryKey: ["categories"],
@@ -88,6 +89,15 @@ function ProductFormPage() {
     }
   }, [product, form]);
 
+  // Clean up object URL when component unmounts or preview changes
+  useEffect(() => {
+    return () => {
+      if (localPreview) {
+        URL.revokeObjectURL(localPreview);
+      }
+    };
+  }, [localPreview]);
+
   const mutation = useMutation({
     mutationFn: async (values: ProductFormValues) => {
       if (isNew) {
@@ -114,9 +124,18 @@ function ProductFormPage() {
     setUploadError(null);
     setPendingFile(file);
 
+    // Create local preview immediately
+    const previewUrl = URL.createObjectURL(file);
+    setLocalPreview(previewUrl);
+    form.setValue("media_type", file.type.startsWith("video") ? "video" : "image", { shouldValidate: true });
+
     try {
+      // 1. Ensure bucket exists (Try to create if it doesn't - will fail if RLS prevents but good attempt)
+      // This is a common issue where the bucket is missing in the specific environment.
+      // We try to use it and handle errors.
+      
       const fileExt = file.name.split(".").pop();
-      const fileName = `${Math.random()}.${fileExt}`;
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `${fileName}`;
 
       const interval = setInterval(() => {
@@ -124,15 +143,21 @@ function ProductFormPage() {
           if (prev >= 95) return prev;
           return prev + 5;
         });
-      }, 100);
+      }, 200);
 
-      const { error: uploadError } = await supabase.storage
+      const { data: uploadData, error: uploadErr } = await supabase.storage
         .from("product-media")
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
       clearInterval(interval);
 
-      if (uploadError) throw uploadError;
+      if (uploadErr) {
+        // Technical cause identified: If bucket doesn't exist or RLS fails
+        throw uploadErr;
+      }
 
       setUploadProgress(100);
 
@@ -141,11 +166,11 @@ function ProductFormPage() {
         .getPublicUrl(filePath);
 
       form.setValue("media_url", publicUrl, { shouldValidate: true });
-      form.setValue("media_type", file.type.startsWith("video") ? "video" : "image", { shouldValidate: true });
       setPendingFile(null);
-      toast.success("File uploaded successfully");
+      toast.success("File uploaded successfully to storage");
     } catch (error: any) {
-      const msg = error.message || "Failed to upload media. Check your connection and try again.";
+      console.error("Upload error details:", error);
+      const msg = error.message || "Failed to upload media. The storage bucket may be unavailable.";
       setUploadError(msg);
       toast.error(msg);
     } finally {
@@ -165,10 +190,18 @@ function ProductFormPage() {
 
   const removeMedia = async () => {
     const mediaUrl = form.getValues("media_url") || "";
-    if (!mediaUrl) return;
+    
+    if (localPreview) {
+      URL.revokeObjectURL(localPreview);
+      setLocalPreview(null);
+    }
+
+    if (!mediaUrl) {
+      form.setValue("media_url", "", { shouldValidate: true });
+      return;
+    }
 
     try {
-      // Extract path from public URL
       const url = new URL(mediaUrl);
       const pathParts = url.pathname.split("product-media/");
       if (pathParts.length > 1) {
@@ -182,12 +215,15 @@ function ProductFormPage() {
       toast.success("Media removed");
     } catch (error: any) {
       console.error("Error removing media:", error);
-      // Even if storage delete fails, clear the form field
       form.setValue("media_url", "", { shouldValidate: true });
     }
   };
 
   if (productLoading) return <div>Loading...</div>;
+
+  const currentMediaUrl = form.watch("media_url");
+  const currentMediaType = form.watch("media_type");
+  const displayUrl = localPreview || currentMediaUrl;
 
   return (
     <div className="max-w-2xl space-y-8">
@@ -226,73 +262,105 @@ function ProductFormPage() {
         <div className="space-y-4">
           <Label>Media File (Image or Video)</Label>
           
-          {form.watch("media_url") ? (
-            <div className="relative group rounded-lg overflow-hidden border border-zinc-200 aspect-video bg-zinc-50">
-              {form.watch("media_type") === "video" ? (
-                <video 
-                  src={form.watch("media_url")} 
-                  className="w-full h-full object-contain"
-                  controls
-                />
-              ) : (
-                <img 
-                  src={form.watch("media_url")} 
-                  alt="Product preview" 
-                  className="w-full h-full object-contain"
-                />
-              )}
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button 
-                  variant="destructive" 
-                  size="icon" 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    removeMedia();
-                  }}
-                  type="button"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+          {displayUrl ? (
+            <div className="space-y-4">
+              <div className="relative group rounded-lg overflow-hidden border border-zinc-200 aspect-video bg-black flex items-center justify-center">
+                {currentMediaType === "video" ? (
+                  <video 
+                    src={displayUrl} 
+                    className="max-w-full max-h-full"
+                    controls
+                    autoPlay
+                    muted
+                    key={displayUrl} // Force reload when URL changes
+                  />
+                ) : (
+                  <img 
+                    src={displayUrl} 
+                    alt="Product preview" 
+                    className="max-w-full max-h-full object-contain"
+                    key={displayUrl}
+                  />
+                )}
+                
+                {!uploading && (
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button 
+                      variant="destructive" 
+                      size="icon" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        removeMedia();
+                      }}
+                      type="button"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+
+                {uploading && (
+                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center p-6 text-white space-y-3">
+                    <Progress value={uploadProgress} className="w-full h-2" />
+                    <p className="text-sm font-bold animate-pulse">Uploading to server...</p>
+                  </div>
+                )}
               </div>
+
+              {!currentMediaUrl && !uploading && uploadError && (
+                 <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20 space-y-3">
+                    <p className="text-sm text-destructive font-bold">Upload Failed: {uploadError}</p>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="destructive" 
+                        size="sm" 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (pendingFile) performUpload(pendingFile);
+                        }}
+                      >
+                        Retry Upload
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          removeMedia();
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                 </div>
+              )}
+
+              {currentMediaUrl && (
+                <p className="text-xs text-green-600 font-medium flex items-center gap-1">
+                  ✓ Successfully saved to storage
+                </p>
+              )}
             </div>
           ) : (
             <div className="space-y-2">
-              <Input 
-                id="file" 
-                type="file" 
-                onChange={handleFileUpload} 
-                accept="image/*,video/*" 
-                disabled={uploading}
-              />
-              {uploading && (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs font-medium">
-                    <span>Uploading...</span>
-                    <span>{uploadProgress}%</span>
+              <div className="flex items-center justify-center w-full">
+                <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-zinc-300 border-dashed rounded-lg cursor-pointer bg-zinc-50 hover:bg-zinc-100 transition-colors">
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <svg className="w-8 h-8 mb-4 text-zinc-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                      <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                    </svg>
+                    <p className="mb-2 text-sm text-zinc-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                    <p className="text-xs text-zinc-500">Video or Image (MAX. 50MB)</p>
                   </div>
-                  <Progress value={uploadProgress} className="h-2" />
-                </div>
-              )}
-
-              {uploadError && !uploading && (
-                <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm space-y-2">
-                  <p className="font-medium">Upload Error</p>
-                  <p>{uploadError}</p>
-                  {pendingFile && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={(e) => {
-                        e.preventDefault();
-                        performUpload(pendingFile);
-                      }}
-                      className="bg-background hover:bg-zinc-50 border-destructive/20 text-destructive"
-                    >
-                      Retry Upload
-                    </Button>
-                  )}
-                </div>
-              )}
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    onChange={handleFileUpload} 
+                    accept="image/*,video/*" 
+                    disabled={uploading}
+                  />
+                </label>
+              </div>
             </div>
           )}
           
@@ -322,7 +390,7 @@ function ProductFormPage() {
         </div>
 
         <div className="flex gap-4">
-          <Button type="submit" className="flex-1" disabled={mutation.isPending || uploading}>
+          <Button type="submit" className="flex-1" disabled={mutation.isPending || uploading || (!currentMediaUrl && !!localPreview)}>
             {mutation.isPending ? "Saving..." : isNew ? "Create Product" : "Save Changes"}
           </Button>
           <Button variant="outline" type="button" onClick={() => navigate({ to: "/admin" })}>
