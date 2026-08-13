@@ -76,11 +76,11 @@ function AdminLayout() {
   return (
     <div className="flex min-h-screen bg-muted/30">
       {/* Sidebar */}
-      <aside className="w-64 border-r bg-background">
+      <aside className="w-64 border-r bg-background flex flex-col">
         <div className="flex h-16 items-center border-b px-6">
           <Link to="/" className="text-xl font-bold text-primary">AR EDITZ Admin</Link>
         </div>
-        <nav className="p-4 space-y-2">
+        <nav className="p-4 space-y-2 flex-1">
           <Button variant="ghost" className="w-full justify-start" asChild>
             <Link to="/admin">
               <LayoutDashboard className="mr-2 h-4 w-4" />
@@ -131,8 +131,8 @@ function AdminLayout() {
             </div>
           </div>
         </nav>
-        <div className="absolute bottom-4 left-4 right-4">
-          <Button variant="outline" className="w-full justify-start text-destructive hover:text-destructive" onClick={handleLogout}>
+        <div className="mt-auto p-4 border-t">
+          <Button variant="outline" size="sm" className="w-fit text-destructive hover:text-destructive flex items-center" onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" />
             Logout
           </Button>
