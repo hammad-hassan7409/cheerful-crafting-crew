@@ -40,8 +40,9 @@ export const createAdminUser = createServerFn({ method: "POST" })
     }
 
     // 3. Assign admin role
-    const { error: roleError } = await supabaseAdmin
-      .from("user_roles")
+    // Using cast to any to bypass the missing type definition in generated types.ts
+    const { error: roleError } = await (supabaseAdmin
+      .from("user_roles" as any) as any)
       .insert({
         user_id: newUser.user.id,
         role: "admin",
