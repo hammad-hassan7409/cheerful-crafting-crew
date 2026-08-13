@@ -14,7 +14,7 @@ import { z } from "zod";
 const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
   category_id: z.string().uuid("Category is required"),
-  media_url: z.string().optional().nullable(),
+  media_url: z.string(),
   media_type: z.enum(["video", "image"]),
   original_price: z.number().min(0),
   discounted_price: z.number().min(0),
