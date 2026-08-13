@@ -145,6 +145,7 @@ function ProductFormPage() {
       toast.success(isNew ? "Product created" : "Product updated");
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["product", productId] });
+      queryClient.invalidateQueries({ queryKey: ["storage-usage"] });
       navigate({ to: "/admin" });
     },
     onError: (error: any) => {
@@ -247,6 +248,7 @@ function ProductFormPage() {
       }
       
       form.setValue("media_url", "", { shouldValidate: true });
+      queryClient.invalidateQueries({ queryKey: ["storage-usage"] });
       toast.success("Media removed");
     } catch (error: any) {
       console.error("Error removing media:", error);

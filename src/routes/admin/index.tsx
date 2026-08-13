@@ -26,13 +26,31 @@ function AdminDashboard() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("products").delete().eq("id", id);
+    mutationFn: async (product: any) => {
+      // 1. Delete media from storage if it exists
+      if (product.media_url) {
+        try {
+          const url = new URL(product.media_url);
+          const pathParts = url.pathname.split("product-media/");
+          if (pathParts.length > 1) {
+            const filePath = pathParts[1];
+            if (filePath) {
+              await supabase.storage.from("product-media").remove([decodeURIComponent(filePath)]);
+            }
+          }
+        } catch (storageErr) {
+          console.error("Failed to delete storage file:", storageErr);
+        }
+      }
+
+      // 2. Delete product from database
+      const { error } = await supabase.from("products").delete().eq("id", product.id);
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Product deleted successfully");
+      toast.success("Product and media deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["storage-usage"] });
     },
     onError: (error: any) => {
       toast.error(error.message);
@@ -83,8 +101,8 @@ function AdminDashboard() {
                       size="icon"
                       className="text-destructive"
                       onClick={() => {
-                        if (confirm("Are you sure you want to delete this product?")) {
-                          deleteMutation.mutate(product.id);
+                        if (confirm("Are you sure you want to delete this product? This will also remove its media file from storage.")) {
+                          deleteMutation.mutate(product);
                         }
                       }}
                     >
