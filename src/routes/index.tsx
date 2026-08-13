@@ -2,9 +2,12 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogIn, Play, Image as ImageIcon, ExternalLink, ChevronRight, Loader2 } from "lucide-react";
+import { LogIn, Play, Image as ImageIcon, ExternalLink, ChevronRight, Loader2, ShieldAlert } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
+import { getSignedUrl } from "@/lib/media.functions";
+
 import {
   Dialog,
   DialogContent,
@@ -27,12 +30,62 @@ export const Route = createFileRoute("/")({
   }),
 });
 
+function Watermark() {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 overflow-hidden opacity-10 select-none">
+      <div className="flex flex-col gap-4 -rotate-12">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="flex gap-12 whitespace-nowrap">
+            {Array.from({ length: 4 }).map((_, j) => (
+              <span key={j} className="text-4xl font-black italic tracking-tighter">AR EDITZ</span>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ProtectedMedia({ children, type = "video" }: { children: ReactNode; type?: "video" | "image" }) {
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    toast.error("Downloads are disabled to protect AR EDITZ samples.", {
+      icon: <ShieldAlert className="h-4 w-4" />,
+    });
+  }, []);
+
+  return (
+    <div 
+      className="relative h-full w-full select-none"
+      onContextMenu={handleContextMenu}
+      onDragStart={(e) => e.preventDefault()}
+    >
+      {/* Invisible guard overlay for images to prevent "Save as" dragging */}
+      {type === "image" && <div className="absolute inset-0 z-10 bg-transparent" />}
+      
+      {/* Subtle watermark */}
+      <Watermark />
+      
+      {children}
+    </div>
+  );
+}
+
 function VideoPreview({ mediaUrl }: { mediaUrl: string }) {
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    getSignedUrl({ path: mediaUrl }).then(url => {
+      if (active) setSignedUrl(url);
+    });
+    return () => { active = false; };
+  }, [mediaUrl]);
 
   return (
-    <div className="h-full w-full relative">
+    <ProtectedMedia type="video">
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-muted/50 backdrop-blur-sm z-10 transition-opacity duration-300">
           <div className="flex flex-col items-center gap-3 w-3/4">
@@ -42,45 +95,122 @@ function VideoPreview({ mediaUrl }: { mediaUrl: string }) {
           </div>
         </div>
       )}
-      <video
-        src={mediaUrl}
-        className={`h-full w-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
-        muted
-        playsInline
-        loop
-        preload="metadata"
-        onProgress={(e) => {
-          const video = e.currentTarget;
-          if (video.buffered.length > 0) {
-            const buffered = video.buffered.end(video.buffered.length - 1);
-            const duration = video.duration;
-            if (duration > 0) {
-              setProgress((buffered / duration) * 100);
+      {signedUrl && (
+        <video
+          src={signedUrl}
+          className={`h-full w-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+          muted
+          playsInline
+          loop
+          preload="metadata"
+          controlsList="nodownload"
+          onProgress={(e) => {
+            const video = e.currentTarget;
+            if (video.buffered.length > 0) {
+              const buffered = video.buffered.end(video.buffered.length - 1);
+              const duration = video.duration;
+              if (duration > 0) {
+                setProgress((buffered / duration) * 100);
+              }
             }
-          }
-        }}
-        onLoadedData={() => {
-          setIsLoading(false);
-          setProgress(100);
-        }}
-        onMouseEnter={(e) => !isLoading && e.currentTarget.play()}
-        onMouseLeave={(e) => {
-          if (!isLoading) {
-            e.currentTarget.pause();
-            e.currentTarget.currentTime = 0;
-          }
-        }}
-      />
+          }}
+          onLoadedData={() => {
+            setIsLoading(false);
+            setProgress(100);
+          }}
+          onMouseEnter={(e) => !isLoading && e.currentTarget.play()}
+          onMouseLeave={(e) => {
+            if (!isLoading) {
+              e.currentTarget.pause();
+              e.currentTarget.currentTime = 0;
+            }
+          }}
+        />
+      )}
       {!isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
           <div className="h-14 w-14 rounded-full bg-primary/90 text-white flex items-center justify-center backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 shadow-xl">
             <Play className="fill-current h-6 w-6 ml-1" />
           </div>
         </div>
       )}
-    </div>
+    </ProtectedMedia>
   );
 }
+
+function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName: string }) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    getSignedUrl({ path: mediaUrl }).then(url => {
+      if (active) setSignedUrl(url);
+    });
+    return () => { active = false; };
+  }, [mediaUrl]);
+
+  return (
+    <Dialog onOpenChange={(open) => {
+      if (!open) {
+        setIsLoading(true);
+        setProgress(0);
+      }
+    }}>
+      <DialogTrigger asChild>
+        <Button variant="secondary" size="icon" className="rounded-xl h-12 w-12 hover:bg-primary hover:text-white transition-colors">
+          <Play className="h-5 w-5 fill-current" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl bg-black border-white/10 p-0 overflow-hidden">
+        <DialogHeader className="sr-only">
+          <DialogTitle>{productName}</DialogTitle>
+        </DialogHeader>
+        
+        <div className="relative w-full aspect-video bg-black flex items-center justify-center">
+          <ProtectedMedia type="video">
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center z-10">
+                <div className="flex flex-col items-center gap-4 w-1/2">
+                  <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                  <span className="text-xs font-bold uppercase tracking-tighter text-white/60">Buffering Preview</span>
+                  <Progress value={progress} className="h-1 bg-white/10" />
+                </div>
+              </div>
+            )}
+            {signedUrl && (
+              <video
+                src={signedUrl}
+                className={`w-full aspect-video bg-black transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+                controls
+                autoPlay
+                playsInline
+                preload="auto"
+                controlsList="nodownload"
+                onProgress={(e) => {
+                  const video = e.currentTarget;
+                  if (video.buffered.length > 0) {
+                    const buffered = video.buffered.end(video.buffered.length - 1);
+                    const duration = video.duration;
+                    if (duration > 0) {
+                      setProgress((buffered / duration) * 100);
+                    }
+                  }
+                }}
+                onLoadedData={() => {
+                  setIsLoading(false);
+                  setProgress(100);
+                }}
+              />
+            )}
+          </ProtectedMedia>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName: string }) {
   const [isLoading, setIsLoading] = useState(true);
@@ -144,6 +274,34 @@ function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName:
 
 function Index() {
   const navigate = useNavigate();
+
+  // Capture deterrence
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        // This is a common trigger point for screenshot tools on some OSs 
+        // or just general deterrence when leaving the tab.
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Deter common shortcut for screenshots/save (though we can't stop OS level)
+      if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'p')) {
+        e.preventDefault();
+        toast.warning("Printing and saving are disabled to protect AR EDITZ samples.", {
+          icon: <ShieldAlert className="h-4 w-4" />,
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
 
   const { data: categories, isLoading: categoriesLoading } = useQuery({
     queryKey: ["categories"],
@@ -236,43 +394,9 @@ function Index() {
 
               <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
                 {categoryProducts.map((product) => (
-                  <div
-                    key={product.id}
-                    className="group relative flex flex-col rounded-2xl border border-border/50 bg-card/50 transition-all hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 overflow-hidden"
-                  >
-                    <div className="aspect-[16/9] relative w-full overflow-hidden bg-muted">
-                      {product.media_type === "video" ? (
-                        <VideoPreview mediaUrl={product.media_url} />
-                      ) : (
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <button className="h-full w-full cursor-zoom-in relative group/image">
-                              <img
-                                src={product.media_url}
-                                alt={product.name}
-                                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                              />
-                              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <ImageIcon className="h-8 w-8 text-white drop-shadow-lg" />
-                              </div>
-                            </button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-[90vw] max-h-[90vh] p-0 overflow-hidden bg-transparent border-none">
-                            <img 
-                              src={product.media_url} 
-                              alt={product.name} 
-                              className="h-full w-full object-contain rounded-lg"
-                            />
-                          </DialogContent>
-                        </Dialog>
-                      )}
-                      
-                      <div className="absolute top-4 right-4 z-10">
-                        <span className="px-3 py-1 rounded-full bg-background/80 backdrop-blur-md text-[10px] font-bold uppercase tracking-widest border border-white/10">
-                          {product.media_type === "video" ? "Video Edit" : "Design"}
-                        </span>
-                      </div>
-                    </div>
+                  <ProductCard key={product.id} product={product} />
+                ))}
+
 
                     <div className="p-6 flex flex-col flex-1">
                       <div className="mb-4">
