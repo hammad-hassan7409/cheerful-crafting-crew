@@ -52,8 +52,8 @@ function AdminSettings() {
       return;
     }
 
-    if (newPassword.length < 8) {
-      toast.error("New password must be at least 8 characters long");
+    if (newPassword.length < 6) {
+      toast.error("New password must be at least 6 characters long");
       return;
     }
 
