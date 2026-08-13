@@ -2,12 +2,15 @@ import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Trash2, X, Loader2 } from "lucide-react";
+import { Trash2, X, Loader2, Play, ImageIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
+import { useServerFn } from "@tanstack/react-start";
+import { getSignedUrl } from "@/lib/media.functions";
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -45,6 +48,9 @@ function ProductFormPage() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [localPreview, setLocalPreview] = useState<string | null>(null);
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const fetchSignedUrl = useServerFn(getSignedUrl);
+
 
   const { data: categories } = useQuery({
     queryKey: ["categories"],
@@ -88,6 +94,16 @@ function ProductFormPage() {
       });
     }
   }, [product, form]);
+
+  useEffect(() => {
+    const mediaUrl = form.watch("media_url");
+    if (mediaUrl && !mediaUrl.startsWith("blob:")) {
+      fetchSignedUrl({ data: { path: mediaUrl } }).then(url => setSignedUrl(url));
+    } else {
+      setSignedUrl(null);
+    }
+  }, [form.watch("media_url"), fetchSignedUrl]);
+
 
   // Clean up object URL when component unmounts or preview changes
   useEffect(() => {
@@ -234,7 +250,8 @@ function ProductFormPage() {
 
   const currentMediaUrl = form.watch("media_url");
   const currentMediaType = form.watch("media_type");
-  const displayUrl = localPreview || currentMediaUrl;
+  const displayUrl = localPreview || signedUrl;
+
 
   return (
     <div className="max-w-2xl space-y-8">
