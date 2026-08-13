@@ -36,7 +36,7 @@ function LoginPage() {
     try {
       const result = await resetPassword();
       if (result.success) {
-        toast.success(result.message);
+        toast.success(result.message, { duration: 6000 });
       }
     } catch (error: any) {
       toast.error(error.message || "Failed to reset password");
