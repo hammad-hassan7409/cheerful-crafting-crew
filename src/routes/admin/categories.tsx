@@ -27,7 +27,8 @@ function CategoriesPage() {
 
   const addMutation = useMutation({
     mutationFn: async (name: string) => {
-      const { error } = await supabase.from("categories").insert([{ name: name.toUpperCase() }]);
+      if (!name.trim()) throw new Error("Category name is required");
+      const { error } = await supabase.from("categories").insert([{ name: name.trim().toUpperCase() }]);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -36,7 +37,7 @@ function CategoriesPage() {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
     },
     onError: (error: any) => {
-      toast.error(error.message);
+      toast.error(error.message || "Failed to add category");
     },
   });
 
