@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Outlet } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, LayoutDashboard, PlusCircle, FolderOpen, HardDrive } from "lucide-react";
+import { LogOut, LayoutDashboard, PlusCircle, FolderOpen, HardDrive, Settings } from "lucide-react";
 import { Link, useSearch } from "@tanstack/react-router";
 import { getStorageUsage } from "@/lib/storage.functions";
 import { useServerFn } from "@tanstack/react-start";
@@ -76,6 +76,12 @@ function AdminLayout() {
             <Link to="/admin/categories">
               <FolderOpen className="mr-2 h-4 w-4" />
               Categories
+            </Link>
+          </Button>
+          <Button variant="ghost" className="w-full justify-start" asChild>
+            <Link to="/admin/settings">
+              <Settings className="mr-2 h-4 w-4" />
+              Settings
             </Link>
           </Button>
           
