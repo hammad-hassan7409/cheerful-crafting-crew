@@ -72,7 +72,8 @@ function CategoriesPage() {
             onChange={(e) => setNewCategory(e.target.value)}
           />
         </div>
-        <Button onClick={() => addMutation.mutate(newCategory)} disabled={!newCategory}>
+        <Button onClick={() => addMutation.mutate(newCategory)} disabled={!newCategory || addMutation.isPending}>
+          {addMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Add Category
         </Button>
       </div>
