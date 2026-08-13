@@ -28,6 +28,23 @@ function LoginPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
+  const resetPassword = useServerFn(forceResetPassword);
+  const [resetting, setResetting] = useState(false);
+
+  const handleForceReset = async () => {
+    setResetting(true);
+    try {
+      const result = await resetPassword();
+      if (result.success) {
+        toast.success(result.message);
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to reset password");
+    } finally {
+      setResetting(false);
+    }
+  };
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
