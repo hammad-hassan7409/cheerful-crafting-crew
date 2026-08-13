@@ -22,11 +22,12 @@ export const getSignedUrl = createServerFn({ method: "GET" })
       .from("product-media")
       .createSignedUrl(decodeURIComponent(filePath), 3600); // 1 hour
 
-    if (error) {
+    if (error || !signedData?.signedUrl) {
       console.error("Error generating signed URL:", error);
       throw new Error("Failed to generate access to media");
     }
 
     return signedData.signedUrl;
   });
+
 
