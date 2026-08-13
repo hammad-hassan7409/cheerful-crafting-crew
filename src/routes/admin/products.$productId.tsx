@@ -194,10 +194,51 @@ function ProductFormPage() {
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="file">Media File (Image or Video)</Label>
-          <Input id="file" type="file" onChange={handleFileUpload} accept="image/*,video/*" />
-          {uploading && <p className="text-sm text-primary">Uploading...</p>}
+        <div className="space-y-4">
+          <Label>Media File (Image or Video)</Label>
+          
+          {form.watch("media_url") ? (
+            <div className="relative group rounded-lg overflow-hidden border border-zinc-200 aspect-video bg-zinc-50">
+              {form.watch("media_type") === "video" ? (
+                <video 
+                  src={form.watch("media_url")} 
+                  className="w-full h-full object-contain"
+                  controls
+                />
+              ) : (
+                <img 
+                  src={form.watch("media_url")} 
+                  alt="Product preview" 
+                  className="w-full h-full object-contain"
+                />
+              )}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button 
+                  variant="destructive" 
+                  size="icon" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    removeMedia();
+                  }}
+                  type="button"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Input 
+                id="file" 
+                type="file" 
+                onChange={handleFileUpload} 
+                accept="image/*,video/*" 
+                disabled={uploading}
+              />
+              {uploading && <p className="text-sm text-primary animate-pulse">Uploading...</p>}
+            </div>
+          )}
+          
           <Input type="hidden" {...form.register("media_url")} />
           {form.formState.errors.media_url && (
             <p className="text-sm text-destructive">{form.formState.errors.media_url.message}</p>
