@@ -173,26 +173,7 @@ function Index() {
                         </div>
                         
                         {product.media_type === "video" ? (
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button variant="secondary" size="icon" className="rounded-xl h-12 w-12 hover:bg-primary hover:text-white transition-colors">
-                                <Play className="h-5 w-5 fill-current" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-4xl bg-black border-white/10 p-0 overflow-hidden">
-                              <DialogHeader className="absolute top-0 left-0 right-0 p-4 z-10 bg-gradient-to-b from-black/80 to-transparent">
-                                <DialogTitle className="text-white font-bold">{product.name}</DialogTitle>
-                              </DialogHeader>
-                              <video
-                                src={product.media_url}
-                                className="w-full aspect-video bg-black"
-                                controls
-                                autoPlay
-                                playsInline
-                                preload="auto"
-                              />
-                            </DialogContent>
-                          </Dialog>
+                          <VideoDialog mediaUrl={product.media_url} productName={product.name} />
                         ) : null}
                       </div>
 
