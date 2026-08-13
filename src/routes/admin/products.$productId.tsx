@@ -100,21 +100,32 @@ function ProductFormPage() {
 
   const mutation = useMutation({
     mutationFn: async (values: ProductFormValues) => {
+      console.log("Saving product values:", values);
       if (isNew) {
-        const { error } = await supabase.from("products").insert([values]);
-        if (error) throw error;
+        const { data, error } = await supabase.from("products").insert([values]).select();
+        if (error) {
+          console.error("Insert error:", error);
+          throw error;
+        }
+        return data;
       } else {
-        const { error } = await supabase.from("products").update(values).eq("id", productId);
-        if (error) throw error;
+        const { data, error } = await supabase.from("products").update(values).eq("id", productId).select();
+        if (error) {
+          console.error("Update error:", error);
+          throw error;
+        }
+        return data;
       }
     },
     onSuccess: () => {
       toast.success(isNew ? "Product created" : "Product updated");
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["product", productId] });
       navigate({ to: "/admin" });
     },
     onError: (error: any) => {
-      toast.error(error.message);
+      console.error("Mutation error callback:", error);
+      toast.error(error.message || "Failed to save changes");
     },
   });
 
