@@ -4,9 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { LogIn, Play, Image as ImageIcon, ExternalLink, ChevronRight, Loader2, ShieldAlert } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, type ReactNode } from "react";
 import { toast } from "sonner";
 import { getSignedUrl } from "@/lib/media.functions";
+import { useServerFn } from "@tanstack/react-start";
+
 
 import {
   Dialog,
@@ -75,14 +77,16 @@ function VideoPreview({ mediaUrl }: { mediaUrl: string }) {
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const fetchSignedUrl = useServerFn(getSignedUrl);
 
   useEffect(() => {
     let active = true;
-    getSignedUrl({ path: mediaUrl }).then(url => {
+    fetchSignedUrl({ data: { path: mediaUrl } }).then(url => {
       if (active) setSignedUrl(url);
     });
     return () => { active = false; };
-  }, [mediaUrl]);
+  }, [mediaUrl, fetchSignedUrl]);
+
 
   return (
     <ProtectedMedia type="video">
@@ -142,14 +146,16 @@ function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName:
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const fetchSignedUrl = useServerFn(getSignedUrl);
 
   useEffect(() => {
     let active = true;
-    getSignedUrl({ path: mediaUrl }).then(url => {
+    fetchSignedUrl({ data: { path: mediaUrl } }).then(url => {
       if (active) setSignedUrl(url);
     });
     return () => { active = false; };
-  }, [mediaUrl]);
+  }, [mediaUrl, fetchSignedUrl]);
+
 
   return (
     <Dialog onOpenChange={(open) => {
