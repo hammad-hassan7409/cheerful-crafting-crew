@@ -182,11 +182,19 @@ function ProductFormPage() {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="original_price">Original Price (Strikethrough)</Label>
-            <Input id="original_price" type="number" {...form.register("original_price")} />
+            <Input 
+              id="original_price" 
+              type="number" 
+              {...form.register("original_price", { valueAsNumber: true })} 
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="discounted_price">Discounted Price (Actual)</Label>
-            <Input id="discounted_price" type="number" {...form.register("discounted_price")} />
+            <Input 
+              id="discounted_price" 
+              type="number" 
+              {...form.register("discounted_price", { valueAsNumber: true })} 
+            />
           </div>
         </div>
 
