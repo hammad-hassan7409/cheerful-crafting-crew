@@ -85,15 +85,11 @@ function ProductFormPage() {
 
   const mutation = useMutation({
     mutationFn: async (values: ProductFormValues) => {
-      if (!values.media_url) {
-        throw new Error("Please upload a media file first");
-      }
-      const submitData = { ...values, media_url: values.media_url };
       if (isNew) {
-        const { error } = await supabase.from("products").insert([submitData as any]);
+        const { error } = await supabase.from("products").insert([values]);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("products").update(submitData as any).eq("id", productId);
+        const { error } = await supabase.from("products").update(values).eq("id", productId);
         if (error) throw error;
       }
     },
