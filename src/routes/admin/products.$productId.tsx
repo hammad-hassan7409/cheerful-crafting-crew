@@ -123,8 +123,8 @@ function ProductFormPage() {
         .from("product-media")
         .getPublicUrl(filePath);
 
-      form.setValue("media_url", publicUrl);
-      form.setValue("media_type", file.type.startsWith("video") ? "video" : "image");
+      form.setValue("media_url", publicUrl, { shouldValidate: true });
+      form.setValue("media_type", file.type.startsWith("video") ? "video" : "image", { shouldValidate: true });
       toast.success("File uploaded successfully");
     } catch (error: any) {
       toast.error(error.message);
