@@ -418,7 +418,12 @@ function ProductFormPage() {
             className="flex-1" 
             disabled={mutation.isPending || uploading || (!currentMediaUrl && !!localPreview)}
           >
-            {mutation.isPending ? "Saving..." : isNew ? "Create Product" : "Save Changes"}
+            {mutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : isNew ? "Create Product" : "Save Changes"}
           </Button>
           <Button 
             variant="outline" 
