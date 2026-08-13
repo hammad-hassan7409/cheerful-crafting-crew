@@ -196,6 +196,7 @@ function ProductFormPage() {
       }
 
       setUploadProgress(100);
+      queryClient.invalidateQueries({ queryKey: ["storage-usage"] });
 
       const { data: { publicUrl } } = supabase.storage
         .from("product-media")
