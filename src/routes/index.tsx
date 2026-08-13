@@ -99,8 +99,9 @@ function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName:
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl bg-black border-white/10 p-0 overflow-hidden">
-        <DialogHeader className="absolute top-0 left-0 right-0 p-4 z-20 bg-gradient-to-b from-black/80 to-transparent">
-          <DialogTitle className="text-white font-bold">{productName}</DialogTitle>
+        {/* We hide the title visual while keeping it accessible for screen readers */}
+        <DialogHeader className="sr-only">
+          <DialogTitle>{productName}</DialogTitle>
         </DialogHeader>
         
         <div className="relative w-full aspect-video bg-black flex items-center justify-center">
