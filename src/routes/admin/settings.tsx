@@ -15,8 +15,12 @@ export const Route = createFileRoute("/admin/settings")({
 });
 
 function AdminSettings() {
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const listAdmins = useServerFn(listAdminUsers);
@@ -43,63 +47,58 @@ function AdminSettings() {
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!currentPassword) {
+      toast.error("Current password is required");
+      return;
+    }
+
     if (newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters long");
+      toast.error("New password must be at least 6 characters long");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.error("New passwords do not match");
       return;
     }
 
     setLoading(true);
     try {
-      console.log("Starting password update process...");
-      
-      // 1. First ensure we have a session in the client
+      // 1. Get current session
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      if (sessionError) {
-        console.error("Session fetch error:", sessionError);
-        toast.error("Error checking session: " + sessionError.message);
-        return;
-      }
-      
-      if (!session) {
-        console.error("No active session found");
-        toast.error("Auth session missing! Please log in again to update your password.");
-        return;
+      if (sessionError || !session) {
+        throw new Error("Authentication session expired. Please log in again.");
       }
 
-      console.log("Session verified, updating password for:", session.user.email);
+      // 2. Verify current password by attempting a re-login/re-auth
+      // Supabase doesn't have a direct "verifyPassword" for the current session,
+      // so we use signInWithPassword which will verify credentials.
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: session.user.email!,
+        password: currentPassword,
+      });
 
-      // 2. Update the user password
-      const { data: updateData, error: updateError } = await supabase.auth.updateUser({
+      if (authError) {
+        throw new Error("Current password is incorrect.");
+      }
+
+      // 3. Update to new password
+      const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword,
       });
 
       if (updateError) {
-        console.error("Password update error:", updateError);
         throw updateError;
       }
 
-      console.log("Password updated successfully in backend");
-
-      // 3. Force a complete refresh of the session to update local storage
-      const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-      
-      if (refreshError) {
-        console.warn("Session refresh after update failed, but password was likely changed:", refreshError);
-        // We don't throw here because the password change might have already worked
-      }
-
       toast.success("Password updated successfully");
+      setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (error: any) {
-      console.error("Critical error in handleUpdatePassword:", error);
-      toast.error(error.message || "Failed to update password. Please try logging out and back in.");
+      console.error("Password update error:", error);
+      toast.error(error.message || "Failed to update password");
     } finally {
       setLoading(false);
     }
@@ -127,28 +126,67 @@ function AdminSettings() {
         <CardContent>
           <form onSubmit={handleUpdatePassword} className="space-y-4">
             <div className="space-y-2">
+              <Label htmlFor="currentPassword">Current Password</Label>
+              <div className="relative">
+                <Input
+                  id="currentPassword"
+                  type={showCurrent ? "text" : "password"}
+                  placeholder="Enter current password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  required
+                  className="bg-background/50 border-border/50 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrent(!showCurrent)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showCurrent ? <KeyRound className="h-4 w-4" /> : <KeyRound className="h-4 w-4 opacity-50" />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="newPassword">New Password</Label>
-              <Input
-                id="newPassword"
-                type="password"
-                placeholder="Enter new password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-                className="bg-background/50 border-border/50"
-              />
+              <div className="relative">
+                <Input
+                  id="newPassword"
+                  type={showNew ? "text" : "password"}
+                  placeholder="Enter new password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  className="bg-background/50 border-border/50 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNew(!showNew)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showNew ? <KeyRound className="h-4 w-4" /> : <KeyRound className="h-4 w-4 opacity-50" />}
+                </button>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm New Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="Confirm new password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                className="bg-background/50 border-border/50"
-              />
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirm ? "text" : "password"}
+                  placeholder="Confirm new password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  className="bg-background/50 border-border/50 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm(!showConfirm)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showConfirm ? <KeyRound className="h-4 w-4" /> : <KeyRound className="h-4 w-4 opacity-50" />}
+                </button>
+              </div>
             </div>
             <Button type="submit" disabled={loading} className="w-full sm:w-auto">
               {loading ? (
