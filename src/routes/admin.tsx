@@ -95,7 +95,7 @@ function AdminLayout() {
                   style={{ width: `${Math.min((storageInfo?.totalBytes || 0) / (1024 * 1024 * 1024 * 5) * 100, 100)}%` }}
                 />
               </div>
-              <p className="text-[10px] text-muted-foreground italic">Approx. usage of 5GB total</p>
+              <p className="text-[10px] text-muted-foreground italic">Approx. usage of 128GB total</p>
             </div>
           </div>
         </nav>
