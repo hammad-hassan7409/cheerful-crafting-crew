@@ -16,16 +16,26 @@ export const getSignedUrl = createServerFn({ method: "GET" })
     if (filePath.startsWith('http')) {
       try {
         const url = new URL(filePath);
-        // The path in Supabase Storage URLs is typically /storage/v1/object/public/bucket-name/filename
-        // or /storage/v1/object/authenticated/bucket-name/filename
-        const pathParts = url.pathname.split('/product-media/');
-        if (pathParts.length > 1) {
-          filePath = pathParts[pathParts.length - 1]!;
+        // Supabase storage URLs can be:
+        // /storage/v1/object/public/bucket/path
+        // /storage/v1/object/sign/bucket/path
+        // /storage/v1/object/authenticated/bucket/path
+        const bucketToken = '/product-media/';
+        const index = url.pathname.indexOf(bucketToken);
+        
+        if (index !== -1) {
+          filePath = url.pathname.substring(index + bucketToken.length);
         } else {
-          // If the split failed, maybe the bucket name is different in the URL
+          // Fallback for different URL structures
           const parts = url.pathname.split('/');
-          filePath = parts[parts.length - 1]!;
+          const bucketIndex = parts.indexOf('product-media');
+          if (bucketIndex !== -1 && bucketIndex < parts.length - 1) {
+            filePath = parts.slice(bucketIndex + 1).join('/');
+          } else {
+            filePath = parts[parts.length - 1]!;
+          }
         }
+        console.log('[MediaFn] Extracted path from URL:', filePath);
       } catch (e) {
         console.error("[MediaFn] Error parsing media URL:", e);
       }
@@ -47,11 +57,7 @@ export const getSignedUrl = createServerFn({ method: "GET" })
     // Use service role client to ensure we can always generate signed URLs for legitimate media
     const { data: signedData, error } = await supabaseAdmin.storage
       .from("product-media")
-      .createSignedUrl(decodedPath, 3600, {
-        transform: {
-          quality: 100
-        }
-      } as any); // 1 hour
+      .createSignedUrl(decodedPath, 3600, { download: false }); // 1 hour
 
     if (error || !signedData?.signedUrl) {
       console.error("[MediaFn] Error generating signed URL for path:", decodedPath, error);

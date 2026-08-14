@@ -238,7 +238,6 @@ function ProductDetailPage() {
                   product.media_type === "video" ? (
                     <video
                       key={signedUrl}
-                      src={signedUrl}
                       className="max-w-full max-h-[70vh] w-auto h-auto block"
                       controls
                       autoPlay
@@ -248,7 +247,9 @@ function ProductDetailPage() {
                       preload="auto"
                       onCanPlay={() => console.log("Product detail video can play")}
                       onError={(e) => console.error("Product detail video error:", e)}
-                    />
+                    >
+                      <source src={signedUrl} type="video/mp4" />
+                    </video>
                   ) : (
                     <img
                       src={signedUrl}
