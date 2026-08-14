@@ -31,13 +31,17 @@ export const getSignedUrl = createServerFn({ method: "GET" })
       throw new Error("Invalid media path provided");
     }
     
+    // Use service role client to ensure we can always generate signed URLs for legitimate media
     const { data: signedData, error } = await supabaseAdmin.storage
       .from("product-media")
       .createSignedUrl(decodeURIComponent(filePath), 3600); // 1 hour
 
     if (error || !signedData?.signedUrl) {
-      console.error("Error generating signed URL:", error);
-      throw new Error("Failed to generate access to media");
+      console.error("Error generating signed URL for path:", filePath, error);
+      
+      // Fallback: If signing fails but the bucket is public, we might be able to use the public URL
+      // However, we strictly follow the signed URL requirement for protection.
+      throw new Error(`Failed to generate access to media: ${error?.message || 'Unknown error'}`);
     }
 
     return signedData.signedUrl;
