@@ -43,8 +43,8 @@ function AdminSettings() {
 
   useEffect(() => {
     if (settings) {
-      setWhatsapp(settings.whatsapp_number || "");
-      setTiktok(settings.tiktok_url || "");
+      setWhatsapp(settings["whatsapp_number"] || "");
+      setTiktok(settings["tiktok_url"] || "");
     }
   }, [settings]);
 
