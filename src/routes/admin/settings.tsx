@@ -23,6 +23,58 @@ function AdminSettings() {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data: settings, isLoading: settingsLoading } = useQuery({
+    queryKey: ["settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("settings").select("*");
+      if (error) throw error;
+      const settingsMap: Record<string, any> = {};
+      data.forEach((s) => {
+        settingsMap[s.key] = s.value;
+      });
+      return settingsMap;
+    },
+  });
+
+  const [whatsapp, setWhatsapp] = useState("");
+  const [tiktok, setTiktok] = useState("");
+
+  useEffect(() => {
+    if (settings) {
+      setWhatsapp(settings.whatsapp_number || "");
+      setTiktok(settings.tiktok_url || "");
+    }
+  }, [settings]);
+
+  const updateSettingsMutation = useMutation({
+    mutationFn: async ({ whatsapp, tiktok }: { whatsapp: string; tiktok: string }) => {
+      const updates = [
+        { key: "whatsapp_number", value: whatsapp },
+        { key: "tiktok_url", value: tiktok },
+      ];
+
+      for (const update of updates) {
+        const { error } = await supabase
+          .from("settings")
+          .upsert(update, { onConflict: "key" });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["settings"] });
+      toast.success("Social links updated successfully");
+    },
+    onError: (error) => {
+      toast.error("Failed to update social links: " + error.message);
+    },
+  });
+
+  const handleUpdateSocials = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateSettingsMutation.mutate({ whatsapp, tiktok });
+  };
 
   const listAdmins = useServerFn(listAdminUsers);
 
