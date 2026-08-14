@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Trash2, Loader2 } from "lucide-react";
+import { Trash2, Loader2, Edit, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 
@@ -14,6 +14,8 @@ export const Route = createFileRoute("/admin/categories")({
 
 function CategoriesPage() {
   const [newCategory, setNewCategory] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState("");
   const queryClient = useQueryClient();
 
   const { data: categories, isLoading } = useQuery({
@@ -38,6 +40,27 @@ function CategoriesPage() {
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to add category");
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, name }: { id: string; name: string }) => {
+      if (!name.trim()) throw new Error("Category name is required");
+      const { error } = await supabase
+        .from("categories")
+        .update({ name: name.trim().toUpperCase() })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Category updated");
+      setEditingId(null);
+      setEditingName("");
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to update category");
     },
   });
 
@@ -82,20 +105,68 @@ function CategoriesPage() {
         <ul className="divide-y">
           {categories?.map((category) => (
             <li key={category.id} className="flex items-center justify-between p-4">
-              <span className="font-medium">{category.name}</span>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-destructive"
-                disabled={deleteMutation.isPending}
-                onClick={() => {
-                  if (confirm("Are you sure? This will delete all products in this category.")) {
-                    deleteMutation.mutate(category.id);
-                  }
-                }}
-              >
-                {deleteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-              </Button>
+              {editingId === category.id ? (
+                <div className="flex flex-1 items-center gap-2">
+                  <Input
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    className="h-8"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") updateMutation.mutate({ id: category.id, name: editingName });
+                      if (e.key === "Escape") setEditingId(null);
+                    }}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-green-500"
+                    onClick={() => updateMutation.mutate({ id: category.id, name: editingName })}
+                    disabled={updateMutation.isPending}
+                  >
+                    {updateMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground"
+                    onClick={() => setEditingId(null)}
+                    disabled={updateMutation.isPending}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <span className="font-medium">{category.name}</span>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground"
+                      onClick={() => {
+                        setEditingId(category.id);
+                        setEditingName(category.name);
+                      }}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive"
+                      disabled={deleteMutation.isPending}
+                      onClick={() => {
+                        if (confirm("Are you sure? This will delete all products in this category.")) {
+                          deleteMutation.mutate(category.id);
+                        }
+                      }}
+                    >
+                      {deleteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                </>
+              )}
             </li>
           ))}
         </ul>
