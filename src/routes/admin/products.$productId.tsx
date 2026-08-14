@@ -24,6 +24,11 @@ const productSchema = z.object({
   media_type: z.enum(["video", "image"]),
   original_price: z.number().min(0),
   discounted_price: z.number().min(0),
+  description: z.string().optional().refine((val) => {
+    if (!val) return true;
+    const words = val.trim().split(/\s+/).filter(word => word.length > 0);
+    return words.length <= 500;
+  }, "Maximum description length is 500 words"),
 });
 
 type ProductFormValues = {
@@ -33,6 +38,7 @@ type ProductFormValues = {
   media_type: "video" | "image";
   original_price: number;
   discounted_price: number;
+  description?: string;
 };
 
 export const Route = createFileRoute("/admin/products/$productId")({

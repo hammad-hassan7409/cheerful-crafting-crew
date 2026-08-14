@@ -36,6 +36,7 @@ export type Database = {
         Row: {
           category_id: string
           created_at: string
+          description: string | null
           discounted_price: number
           id: string
           media_type: string
@@ -46,6 +47,7 @@ export type Database = {
         Insert: {
           category_id: string
           created_at?: string
+          description?: string | null
           discounted_price: number
           id?: string
           media_type: string
@@ -56,6 +58,7 @@ export type Database = {
         Update: {
           category_id?: string
           created_at?: string
+          description?: string | null
           discounted_price?: number
           id?: string
           media_type?: string
