@@ -117,7 +117,11 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
       {/* Video Area */}
       <div 
         className="relative w-full aspect-video bg-black flex items-center justify-center overflow-hidden cursor-pointer"
-        onClick={togglePlay}
+        onMouseDown={(e) => {
+          // On mobile, tap to play/pause is common, but we need to ensure it doesn't conflict with potential scrolling
+          // Using onMouseDown/onTouchStart instead of onClick can sometimes be more responsive
+          togglePlay();
+        }}
       >
         {src && (
           <video
