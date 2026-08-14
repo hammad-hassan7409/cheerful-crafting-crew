@@ -33,13 +33,11 @@ export const Route = createFileRoute("/")({
 
 function ProtectedMedia({ 
   children, 
-  type = "video",
   scale = 1,
   onScaleChange,
   isZoomEnabled = false
 }: { 
   children: ReactNode; 
-  type?: "video" | "image";
   scale?: number;
   onScaleChange?: (scale: number) => void;
   isZoomEnabled?: boolean;
@@ -58,7 +56,7 @@ function ProtectedMedia({
 
   // Pinch to zoom logic
   useEffect(() => {
-    if (!internalRef || type !== "image" || !isZoomEnabled) return;
+    if (!internalRef || !isZoomEnabled) return;
 
     let initialDist = 0;
     let initialScale = scale;
@@ -118,7 +116,7 @@ function ProtectedMedia({
       internalRef.removeEventListener("touchmove", handleTouchMove);
       internalRef.removeEventListener("touchend", handleTouchEnd);
     };
-  }, [internalRef, type, scale, onScaleChange, isZoomEnabled, isDragging, startPos, offset]);
+  }, [internalRef, scale, onScaleChange, isZoomEnabled, isDragging, startPos, offset]);
 
   // Reset offset when scale returns to 1
   useEffect(() => {
@@ -140,136 +138,38 @@ function ProtectedMedia({
           transform: `scale(${scale}) translate(${offset.x / scale}px, ${offset.y / scale}px)` 
         }}
       >
-        {type === "image" && <div className="absolute inset-0 z-10 bg-transparent" />}
+        <div className="absolute inset-0 z-10 bg-transparent" />
         {children}
       </div>
     </div>
   );
 }
 
-const VideoPreview = memo(function VideoPreview({ mediaUrl }: { mediaUrl: string }) {
-  const [isLoading, setIsLoading] = useState(true);
-  const { url: signedUrl, isLoading: isSigning } = useSignedUrl(mediaUrl);
 
-  const showLoader = !signedUrl || isLoading || isSigning;
+function ImagePreview({ mediaUrl }: { mediaUrl: string }) {
+  const { url: signedUrl, isLoading } = useSignedUrl(mediaUrl);
 
   return (
-    <ProtectedMedia type="video">
-      {showLoader && (
+    <ProtectedMedia>
+      {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-muted/50 backdrop-blur-sm z-10 transition-opacity duration-300">
-          <div className="flex flex-col items-center gap-3 w-3/4 text-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              {!signedUrl && !isSigning ? "Media Unavailable" : "Initializing"}
-            </span>
-          </div>
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       )}
       {signedUrl && (
-        <video
-          key={signedUrl}
+        <img
           src={signedUrl}
+          alt="Product preview"
           className={cn(
             "max-w-full max-h-full w-auto h-auto object-contain grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500",
             isLoading ? "opacity-0" : "opacity-100"
           )}
-          muted
-          playsInline
-          loop
-          preload="auto"
-          controlsList="nodownload"
-          onCanPlay={() => setIsLoading(false)}
-          onLoadedData={() => setIsLoading(false)}
-          onMouseEnter={(e) => {
-            if (!isLoading) {
-              const playPromise = e.currentTarget.play();
-              if (playPromise !== undefined) {
-                playPromise.catch(err => console.error("Autoplay error:", err));
-              }
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isLoading) {
-              e.currentTarget.pause();
-              e.currentTarget.currentTime = 0;
-            }
-          }}
-        >
-          <source src={signedUrl} type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      )}
-      {!isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-          <div className="h-14 w-14 rounded-full bg-primary/90 text-white flex items-center justify-center backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 shadow-xl">
-            <Play className="fill-current h-6 w-6 ml-1" />
-          </div>
-        </div>
+        />
       )}
     </ProtectedMedia>
   );
-});
-
-function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName: string }) {
-  const [isLoading, setIsLoading] = useState(true);
-  const { url: signedUrl } = useSignedUrl(mediaUrl);
-
-  const showLoader = !signedUrl || isLoading;
-
-  return (
-    <Dialog onOpenChange={(open) => {
-      if (!open) {
-        setIsLoading(true);
-      }
-    }}>
-      <DialogTrigger asChild>
-        <Button variant="secondary" size="icon" className="rounded-xl h-12 w-12 hover:bg-primary hover:text-white transition-colors">
-          <Play className="h-5 w-5 fill-current" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-4xl bg-black border-white/10 p-0 overflow-hidden">
-        <DialogHeader className="sr-only">
-          <DialogTitle>{productName}</DialogTitle>
-        </DialogHeader>
-        
-        <div className="relative w-full bg-black flex items-center justify-center min-h-[300px]">
-          <ProtectedMedia type="video">
-            {showLoader && (
-              <div className="absolute inset-0 flex items-center justify-center z-10">
-                <div className="flex flex-col items-center gap-4 w-1/2">
-                  <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                  <span className="text-xs font-bold uppercase tracking-tighter text-white/60">Buffering Preview</span>
-                </div>
-              </div>
-            )}
-            {signedUrl && (
-              <video
-                key={signedUrl}
-                src={signedUrl}
-                className={cn(
-                  "max-w-full max-h-[80vh] w-auto h-auto bg-black transition-opacity duration-500",
-                  isLoading ? "opacity-0" : "opacity-100"
-                )}
-                controls
-                autoPlay
-                muted
-                playsInline
-                preload="auto"
-                controlsList="nodownload"
-                onCanPlay={() => setIsLoading(false)}
-                onLoadedData={() => setIsLoading(false)}
-                onError={(e) => {
-                  console.error("Video dialog error:", e);
-                  setIsLoading(false);
-                }}
-              />
-            )}
-          </ProtectedMedia>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
 }
+
 
 function ImageZoomDialog({ signedUrl, productName }: { signedUrl: string | null; productName: string }) {
   const [zoom, setZoom] = useState(1);
