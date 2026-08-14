@@ -366,12 +366,12 @@ function Index() {
           </p>
           <div className="flex gap-4">
             <Button variant="ghost" size="sm" className="text-xs uppercase tracking-widest font-bold" asChild>
-              <a href="https://wa.me/923021937758" target="_blank" rel="noreferrer">
+              <a href={`https://wa.me/${settings?.["whatsapp_number"] || "923021937758"}`} target="_blank" rel="noreferrer">
                 WhatsApp
               </a>
             </Button>
             <Button variant="ghost" size="sm" className="text-xs uppercase tracking-widest font-bold" asChild>
-              <a href="https://www.tiktok.com/@ammar.editz8" target="_blank" rel="noreferrer">
+              <a href={settings?.["tiktok_url"] || "https://www.tiktok.com/@ammar.editz8"} target="_blank" rel="noreferrer">
                 TikTok
               </a>
             </Button>
@@ -394,7 +394,7 @@ function ProductCard({ product }: { product: any }) {
   }, [product.media_url, fetchSignedUrl]);
 
   const handleSendToEditor = (productName: string) => {
-    const phoneNumber = "923021937758";
+    const phoneNumber = settings?.["whatsapp_number"] || "923021937758";
     const message = encodeURIComponent(productName);
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
   };
