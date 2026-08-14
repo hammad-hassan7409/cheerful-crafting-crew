@@ -4,22 +4,22 @@ import { z } from "zod";
 export const getSignedUrl = createServerFn({ method: "GET" })
   .inputValidator((data) => z.object({ path: z.string() }).parse(data))
   .handler(async ({ data }) => {
-    // We import supabaseAdmin inside the handler to keep it server-side
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     
-    // Path might be a full URL if it was already saved that way
     let filePath: string = data.path;
     
-    // If it's a full URL, we need to extract the path within the bucket
+    // Improved path extraction logic
     if (filePath.startsWith('http')) {
       try {
         const url = new URL(filePath);
+        // Look for the bucket name in the path
         const bucketToken = '/product-media/';
         const index = url.pathname.indexOf(bucketToken);
         
         if (index !== -1) {
           filePath = url.pathname.substring(index + bucketToken.length);
         } else {
+          // Fallback parsing for different URL structures
           const parts = url.pathname.split('/');
           const bucketIndex = parts.indexOf('product-media');
           if (bucketIndex !== -1 && bucketIndex < parts.length - 1) {
@@ -33,31 +33,28 @@ export const getSignedUrl = createServerFn({ method: "GET" })
       }
     }
     
-    // Clean up query parameters if they exist in the path
-    filePath = filePath.split('?')[0]!;
+    // Clean up query parameters and URL encoding
+    filePath = decodeURIComponent(filePath.split('?')[0]!);
     
-    // Decode the path because it might be URL encoded
-    const decodedPath = decodeURIComponent(filePath);
-    
-    if (!decodedPath) {
+    if (!filePath) {
       throw new Error("Invalid media path provided");
     }
     
-    // Use service role client to ensure we can always generate signed URLs for legitimate media
     const { data: signedData, error } = await supabaseAdmin.storage
       .from("product-media")
-      .createSignedUrl(decodedPath, 7200); // 2 hours for stable viewing session
+      .createSignedUrl(filePath, 7200); // 2 hours
 
     if (error || !signedData?.signedUrl) {
-      if (error?.message?.includes('Object not found') || (error as any)?.status === 404 || (error as any)?.code === 'NoSuchKey') {
+      console.error("[MediaFn] Signed URL error:", error, "Path:", filePath);
+      if (error?.message?.includes('Object not found') || (error as any)?.status === 404) {
         return null;
       }
-      
       throw new Error(`Failed to generate access to media: ${error?.message || 'Unknown error'}`);
     }
 
     return signedData.signedUrl;
   });
+
 
 
 

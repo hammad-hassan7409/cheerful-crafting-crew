@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 
 interface VideoPlayerProps {
@@ -12,6 +11,7 @@ interface VideoPlayerProps {
 
 export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [volume, setVolume] = useState(1);
@@ -69,9 +69,11 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
   };
 
   const toggleFullscreen = () => {
-    if (!videoRef.current) return;
-    if (videoRef.current.requestFullscreen) {
-      videoRef.current.requestFullscreen();
+    if (!containerRef.current) return;
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      containerRef.current.requestFullscreen();
     }
   };
 
@@ -79,10 +81,10 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
     const el = videoRef.current;
     const mediaError = el?.error ?? null;
     const codeMap: Record<number, string> = {
-      1: "MEDIA_ERR_ABORTED — loading was aborted",
-      2: "MEDIA_ERR_NETWORK — a network error interrupted the download",
-      3: "MEDIA_ERR_DECODE — the file could not be decoded",
-      4: "MEDIA_ERR_SRC_NOT_SUPPORTED — the source is unsupported or unreachable (expired/invalid URL)",
+      1: "MEDIA_ERR_ABORTED",
+      2: "MEDIA_ERR_NETWORK",
+      3: "MEDIA_ERR_DECODE",
+      4: "MEDIA_ERR_SRC_NOT_SUPPORTED",
     };
     const detail = mediaError ? (codeMap[mediaError.code] ?? `Unknown code ${mediaError.code}`) : "No MediaError reported";
 
@@ -97,18 +99,22 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
     });
 
     setIsLoading(false);
-    setError("This video couldn't be loaded right now. Please retry.");
+    setError("Video playback failed. Please check your connection or file format.");
   }, [src]);
 
   const formatTime = (time: number) => {
+    if (isNaN(time)) return "0:00";
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
   return (
-    <div className={cn("flex flex-col w-full bg-black rounded-3xl overflow-hidden border border-white/10", className)}>
-      {/* Video Area - NO OVERLAYS */}
+    <div 
+      ref={containerRef}
+      className={cn("flex flex-col w-full bg-black rounded-3xl overflow-hidden border border-white/10", className)}
+    >
+      {/* Video Area */}
       <div className="relative w-full aspect-video bg-black flex items-center justify-center overflow-hidden">
         {src && (
           <video
@@ -125,8 +131,10 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             onError={handleError}
             playsInline
             preload="auto"
+            crossOrigin="anonymous"
           >
             <source src={src} type="video/mp4" />
+            Your browser does not support the video tag.
           </video>
         )}
         
@@ -146,7 +154,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
         )}
       </div>
 
-      {/* External Control Bar - OUTSIDE the video frame */}
+      {/* External Control Bar */}
       <div className="w-full bg-zinc-950 p-4 border-t border-white/5 space-y-4">
         {/* Progress Slider */}
         <div 
@@ -170,6 +178,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
               size="icon"
               onClick={togglePlay}
               className="text-white hover:bg-white/10 rounded-xl"
+              disabled={!!error}
             >
               {isPlaying ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current" />}
             </Button>

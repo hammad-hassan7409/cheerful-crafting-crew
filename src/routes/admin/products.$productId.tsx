@@ -156,11 +156,13 @@ function ProductFormPage() {
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `${fileName}`;
 
+      // Upload with explicit content type to ensure browser plays it correctly
       const { data: uploadData, error: uploadErr } = await supabase.storage
         .from("product-media")
         .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
+          contentType: file.type // CRITICAL: Ensure MIME type is preserved
         });
 
       if (uploadErr) {
@@ -170,20 +172,21 @@ function ProductFormPage() {
       setUploadProgress(100);
       queryClient.invalidateQueries({ queryKey: ["storage-usage"] });
 
-      // Use the storage path rather than the public URL to ensure signed URLs work correctly
+      // STORE ONLY THE FILENAME/PATH, NOT THE PUBLIC URL
       form.setValue("media_url", filePath, { shouldValidate: true });
 
       setPendingFile(null);
-      toast.success("File uploaded successfully to storage");
+      toast.success("File uploaded successfully");
     } catch (error: any) {
-      console.error("Upload error details:", error);
-      const msg = error.message || "Failed to upload media. The storage bucket may be unavailable.";
+      console.error("Upload error:", error);
+      const msg = error.message || "Failed to upload media.";
       setUploadError(msg);
       toast.error(msg);
     } finally {
       setUploading(false);
     }
   };
+
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
