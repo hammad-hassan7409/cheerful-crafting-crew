@@ -7,8 +7,8 @@ import {
   MessageSquare, 
   ShieldAlert, 
   ArrowLeft, 
-  Play, 
   Image as ImageIcon,
+
   ZoomIn,
   ZoomOut,
   RotateCcw
