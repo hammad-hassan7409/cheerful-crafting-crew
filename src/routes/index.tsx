@@ -146,29 +146,6 @@ function ProtectedMedia({
 }
 
 
-function ImagePreview({ mediaUrl }: { mediaUrl: string }) {
-  const { url: signedUrl, isLoading } = useSignedUrl(mediaUrl);
-
-  return (
-    <ProtectedMedia>
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-muted/50 backdrop-blur-sm z-10 transition-opacity duration-300">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      )}
-      {signedUrl && (
-        <img
-          src={signedUrl}
-          alt="Product preview"
-          className={cn(
-            "max-w-full max-h-full w-auto h-auto object-contain grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500",
-            isLoading ? "opacity-0" : "opacity-100"
-          )}
-        />
-      )}
-    </ProtectedMedia>
-  );
-}
 
 
 function ImageZoomDialog({ signedUrl, productName }: { signedUrl: string | null; productName: string }) {
