@@ -170,11 +170,8 @@ function ProductFormPage() {
       setUploadProgress(100);
       queryClient.invalidateQueries({ queryKey: ["storage-usage"] });
 
-      const { data: { publicUrl } } = supabase.storage
-        .from("product-media")
-        .getPublicUrl(filePath);
-
-      form.setValue("media_url", publicUrl, { shouldValidate: true });
+      // Use the storage path rather than the public URL to ensure signed URLs work correctly
+      form.setValue("media_url", filePath, { shouldValidate: true });
 
       setPendingFile(null);
       toast.success("File uploaded successfully to storage");
