@@ -8,7 +8,6 @@ import { useState, useEffect, useCallback, type ReactNode, memo } from "react";
 import { toast } from "sonner";
 import { useSignedUrl } from "@/hooks/use-signed-url";
 
-
 import {
   Dialog,
   DialogContent,
@@ -155,7 +154,6 @@ const VideoPreview = memo(function VideoPreview({ mediaUrl }: { mediaUrl: string
   // Once we have a URL, the video element handles buffering internally
   const showLoader = !signedUrl || isLoading;
 
-
   return (
     <ProtectedMedia type="video">
       {showLoader && (
@@ -195,14 +193,13 @@ const VideoPreview = memo(function VideoPreview({ mediaUrl }: { mediaUrl: string
       )}
     </ProtectedMedia>
   );
-}
+});
 
 function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName: string }) {
   const [isLoading, setIsLoading] = useState(true);
   const { url: signedUrl } = useSignedUrl(mediaUrl);
 
   const showLoader = !signedUrl || isLoading;
-
 
   return (
     <Dialog onOpenChange={(open) => {
@@ -249,8 +246,6 @@ function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName:
     </Dialog>
   );
 }
-
-
 
 function ImageZoomDialog({ signedUrl, productName }: { signedUrl: string | null; productName: string }) {
   const [zoom, setZoom] = useState(1);
@@ -316,13 +311,11 @@ function Index() {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
-        // This is a common trigger point for screenshot tools on some OSs 
-        // or just general deterrence when leaving the tab.
+        // Deterrence logic can go here
       }
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Deter common shortcut for screenshots/save (though we can't stop OS level)
       if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'p')) {
         e.preventDefault();
         toast.warning("Printing and saving are disabled to protect AR EDITZ samples.", {
@@ -338,7 +331,6 @@ function Index() {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
-
 
   const { data: categories, isLoading: categoriesLoading } = useQuery({
     queryKey: ["categories"],
@@ -456,7 +448,6 @@ function Index() {
                     />
                   </Link>
                 ))}
-
               </div>
             </section>
           );
@@ -500,6 +491,7 @@ function Index() {
     </div>
   );
 }
+
 function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber?: string }) {
   const { url: signedUrl } = useSignedUrl(product.media_url);
 
