@@ -238,16 +238,18 @@ function ProductDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
           {/* Media Section */}
           <div className="space-y-4">
-            <div className="aspect-video bg-muted rounded-3xl overflow-hidden border border-border/40 relative shadow-2xl group/media">
+            <div className="w-full bg-muted rounded-3xl overflow-hidden border border-border/40 relative shadow-2xl group/media min-h-[300px] flex items-center justify-center">
               <ProtectedMedia 
                 type={product.media_type as "video" | "image"} 
                 scale={product.media_type === "image" ? zoom : 1}
+                onScaleChange={setZoom}
+                isZoomEnabled={product.media_type === "image"}
               >
                 {signedUrl ? (
                   product.media_type === "video" ? (
                     <video
                       src={signedUrl}
-                      className="w-full h-full object-cover"
+                      className="max-w-full max-h-[70vh] w-auto h-auto block"
                       controls
                       autoPlay
                       muted
@@ -258,11 +260,11 @@ function ProductDetailPage() {
                     <img
                       src={signedUrl}
                       alt={product.name}
-                      className="w-full h-full object-contain"
+                      className="max-w-full max-h-[70vh] w-auto h-auto block object-contain"
                     />
                   )
                 ) : (
-                  <div className="flex items-center justify-center h-full">
+                  <div className="flex items-center justify-center h-64 w-full">
                     <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
                   </div>
                 )}
