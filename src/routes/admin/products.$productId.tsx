@@ -40,7 +40,7 @@ type ProductFormValues = {
   media_type: "video" | "image";
   original_price: number;
   discounted_price: number;
-  description: string | undefined;
+  description?: string;
 };
 
 export const Route = createFileRoute("/admin/products/$productId")({
@@ -135,8 +135,12 @@ function ProductFormPage() {
   const mutation = useMutation({
     mutationFn: async (values: ProductFormValues) => {
       console.log("Saving product values:", values);
+      const payload = {
+        ...values,
+        description: values.description || ""
+      };
       if (isNew) {
-        const { data, error } = await supabase.from("products").insert([values]).select();
+        const { data, error } = await supabase.from("products").insert([payload]).select();
         if (error) {
           console.error("Insert error:", error);
           throw error;
