@@ -237,6 +237,7 @@ function ProductDetailPage() {
                 {signedUrl ? (
                   product.media_type === "video" ? (
                     <video
+                      key={signedUrl}
                       src={signedUrl}
                       className="max-w-full max-h-[70vh] w-auto h-auto block"
                       controls

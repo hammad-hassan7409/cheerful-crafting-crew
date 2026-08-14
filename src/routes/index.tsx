@@ -177,7 +177,13 @@ const VideoPreview = memo(function VideoPreview({ mediaUrl }: { mediaUrl: string
           controlsList="nodownload"
           onCanPlay={() => setIsLoading(false)}
           onLoadedData={() => setIsLoading(false)}
-          onMouseEnter={(e) => !isLoading && e.currentTarget.play()}
+          onMouseEnter={(e) => {
+            if (!isLoading) {
+              e.currentTarget.play().catch(err => {
+                console.error("Autoplay failed:", err);
+              });
+            }
+          }}
           onMouseLeave={(e) => {
             if (!isLoading) {
               e.currentTarget.pause();
@@ -231,6 +237,7 @@ function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName:
             )}
             {signedUrl && (
               <video
+                key={signedUrl}
                 src={signedUrl}
                 className={cn(
                   "max-w-full max-h-[80vh] w-auto h-auto bg-black transition-opacity duration-500",
@@ -238,11 +245,16 @@ function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName:
                 )}
                 controls
                 autoPlay
+                muted
                 playsInline
                 preload="auto"
                 controlsList="nodownload"
                 onCanPlay={() => setIsLoading(false)}
                 onLoadedData={() => setIsLoading(false)}
+                onError={(e) => {
+                  console.error("Video dialog error:", e);
+                  setIsLoading(false);
+                }}
               />
             )}
           </ProtectedMedia>
