@@ -235,7 +235,7 @@ function ProductFormPage() {
   if (productLoading) return <div>Loading...</div>;
 
   const currentMediaUrl = form.watch("media_url");
-  const currentMediaType = form.watch("media_type");
+  const currentMediaType = "image";
   const displayUrl = localPreview || signedUrl;
 
 
