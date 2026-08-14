@@ -143,6 +143,7 @@ function ProductFormPage() {
     // Update form type immediately
     form.setValue("media_type", "image", { shouldValidate: true });
 
+
     // Create local preview immediately
     const previewUrl = URL.createObjectURL(file);
     setLocalPreview(previewUrl);
