@@ -220,14 +220,18 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
                 step="0.1"
                 value={isMuted ? 0 : volume}
                 onChange={handleVolumeChange}
+                onClick={(e) => e.stopPropagation()}
                 className="w-20 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
               />
             </div>
-
+ 
             <Button
               variant="ghost"
               size="icon"
-              onClick={toggleFullscreen}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFullscreen();
+              }}
               className="text-white hover:bg-white/10 rounded-xl"
             >
               <Maximize className="h-5 w-5" />
