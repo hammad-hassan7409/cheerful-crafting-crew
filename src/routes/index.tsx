@@ -419,7 +419,8 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
                         className="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-700 group-hover:scale-110"
                         muted
                         playsInline
-                        preload="metadata"
+                        preload="auto"
+                        key={signedUrl}
                       />
                       <div className="absolute inset-0 flex items-center justify-center bg-black/20">
                         <div className="h-12 w-12 rounded-full bg-primary/80 flex items-center justify-center shadow-xl border border-white/20">
@@ -435,6 +436,7 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
                     />
                   )
                 )}
+
               </ProtectedMedia>
               <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
                 {product.media_type === "video" ? (
