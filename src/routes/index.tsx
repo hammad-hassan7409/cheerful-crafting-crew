@@ -414,11 +414,10 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
                   product.media_type === "video" ? (
                     <div className="relative w-full h-full flex items-center justify-center">
                       <video
-                        src={signedUrl}
                         className="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-700 group-hover:scale-110"
                         muted
                         playsInline
-                        preload="metadata"
+                        preload="auto"
                         key={signedUrl}
                       >
                         <source src={signedUrl} type="video/mp4" />

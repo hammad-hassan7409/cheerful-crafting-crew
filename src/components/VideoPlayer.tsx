@@ -124,16 +124,14 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
     >
       {/* Media Area */}
       <div 
-        className="relative w-full aspect-video bg-black flex items-center justify-center overflow-hidden cursor-pointer"
+        className="relative w-full aspect-video bg-zinc-900 flex items-center justify-center overflow-hidden cursor-pointer"
         onClick={togglePlay}
       >
         {src && (
           <video
             ref={videoRef}
             key={src}
-            src={src}
-            poster={poster}
-            className="w-full h-full object-contain pointer-events-none"
+            className="w-full h-full object-contain pointer-events-none bg-zinc-900"
             onPlay={() => {
               setIsPlaying(true);
               setIsLoading(false);
@@ -145,9 +143,10 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             onCanPlay={() => setIsLoading(false)}
             onError={handleError}
             playsInline
-            preload="metadata"
+            preload="auto"
             crossOrigin="anonymous"
           >
+            <source src={src} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         )}
