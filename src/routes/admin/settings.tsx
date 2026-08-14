@@ -182,7 +182,7 @@ function AdminSettings() {
         <CardContent>
           <form onSubmit={handleUpdateSocials} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="whatsapp">WhatsApp Number (with country code, e.g., 923021937758)</Label>
+              <Label htmlFor="whatsapp">WhatsApp Number (with country code, e.g., 920123456789)</Label>
               <div className="relative">
                 <Input
                   id="whatsapp"
