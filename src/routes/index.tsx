@@ -381,7 +381,7 @@ function Index() {
     </div>
   );
 }
-function ProductCard({ product }: { product: any }) {
+function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber?: string }) {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const fetchSignedUrl = useServerFn(getSignedUrl);
 
