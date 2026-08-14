@@ -239,6 +239,69 @@ function AdminSettings() {
         </CardContent>
       </Card>
 
+      {/* Social Links Settings */}
+      <Card className="bg-card/50 border-border/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Share2 className="h-5 w-5 text-primary" />
+            Social Media Links
+          </CardTitle>
+          <CardDescription>
+            Update your WhatsApp number and TikTok profile link shown in the footer.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleUpdateSocials} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="whatsapp">WhatsApp Number (with country code, e.g., 923021937758)</Label>
+              <div className="relative">
+                <Input
+                  id="whatsapp"
+                  type="text"
+                  placeholder="923021937758"
+                  value={whatsapp}
+                  onChange={(e) => setWhatsapp(e.target.value)}
+                  className="bg-background/50 border-border/50 pr-10"
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  <MessageSquare className="h-4 w-4" />
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tiktok">TikTok Profile URL</Label>
+              <div className="relative">
+                <Input
+                  id="tiktok"
+                  type="url"
+                  placeholder="https://www.tiktok.com/@yourusername"
+                  value={tiktok}
+                  onChange={(e) => setTiktok(e.target.value)}
+                  className="bg-background/50 border-border/50 pr-10"
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  <Video className="h-4 w-4" />
+                </div>
+              </div>
+            </div>
+            <Button 
+              type="submit" 
+              disabled={updateSettingsMutation.isPending || settingsLoading} 
+              className="w-full sm:w-auto"
+            >
+              {updateSettingsMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Social Links"
+              )}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
       {/* Change Password */}
       <Card className="bg-card/50 border-border/50">
         <CardHeader>
