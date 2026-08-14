@@ -145,7 +145,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             onCanPlay={() => setIsLoading(false)}
             onError={handleError}
             playsInline
-            preload="metadata"
+            preload="auto"
             crossOrigin="anonymous"
           >
             Your browser does not support the video tag.
