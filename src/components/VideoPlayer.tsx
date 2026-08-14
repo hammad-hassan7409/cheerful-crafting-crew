@@ -176,11 +176,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
         {/* Progress Slider */}
         <div 
           className="relative w-full h-2 bg-white/10 rounded-full cursor-pointer group"
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            handleSeek(e);
-          }}
-          onTouchStart={(e) => {
+          onClick={(e) => {
             e.stopPropagation();
             handleSeek(e);
           }}
@@ -200,7 +196,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             <Button
               variant="ghost"
               size="icon"
-              onMouseDown={(e) => {
+              onClick={(e) => {
                 e.stopPropagation();
                 togglePlay();
               }}
@@ -220,7 +216,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                onMouseDown={(e) => {
+                onClick={(e) => {
                   e.stopPropagation();
                   toggleMute();
                 }}
@@ -235,8 +231,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
                 step="0.1"
                 value={isMuted ? 0 : volume}
                 onChange={handleVolumeChange}
-                onMouseDown={(e) => e.stopPropagation()}
-                onTouchStart={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
                 className="w-20 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
               />
             </div>
@@ -244,7 +239,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             <Button
               variant="ghost"
               size="icon"
-              onMouseDown={(e) => {
+              onClick={(e) => {
                 e.stopPropagation();
                 toggleFullscreen();
               }}
