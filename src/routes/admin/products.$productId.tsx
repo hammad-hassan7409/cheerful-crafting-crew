@@ -277,7 +277,7 @@ function ProductFormPage() {
                     autoPlay
                     muted
                     preload="auto"
-                    key={displayUrl} // Force reload when URL changes
+                    key={displayUrl}
                   />
                 ) : (
                   <img 

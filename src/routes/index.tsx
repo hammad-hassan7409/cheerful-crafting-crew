@@ -165,6 +165,7 @@ const VideoPreview = memo(function VideoPreview({ mediaUrl }: { mediaUrl: string
       )}
       {signedUrl && (
         <video
+          key={signedUrl}
           src={signedUrl}
           className={cn(
             "max-w-full max-h-full w-auto h-auto object-contain grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500",
@@ -173,11 +174,18 @@ const VideoPreview = memo(function VideoPreview({ mediaUrl }: { mediaUrl: string
           muted
           playsInline
           loop
-          preload="metadata"
+          preload="auto"
           controlsList="nodownload"
           onCanPlay={() => setIsLoading(false)}
           onLoadedData={() => setIsLoading(false)}
-          onMouseEnter={(e) => !isLoading && e.currentTarget.play()}
+          onMouseEnter={(e) => {
+            if (!isLoading) {
+              const playPromise = e.currentTarget.play();
+              if (playPromise !== undefined) {
+                playPromise.catch(err => console.error("Autoplay error:", err));
+              }
+            }
+          }}
           onMouseLeave={(e) => {
             if (!isLoading) {
               e.currentTarget.pause();
@@ -231,6 +239,7 @@ function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName:
             )}
             {signedUrl && (
               <video
+                key={signedUrl}
                 src={signedUrl}
                 className={cn(
                   "max-w-full max-h-[80vh] w-auto h-auto bg-black transition-opacity duration-500",
@@ -238,11 +247,16 @@ function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName:
                 )}
                 controls
                 autoPlay
+                muted
                 playsInline
                 preload="auto"
                 controlsList="nodownload"
                 onCanPlay={() => setIsLoading(false)}
                 onLoadedData={() => setIsLoading(false)}
+                onError={(e) => {
+                  console.error("Video dialog error:", e);
+                  setIsLoading(false);
+                }}
               />
             )}
           </ProtectedMedia>

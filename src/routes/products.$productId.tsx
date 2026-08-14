@@ -237,6 +237,7 @@ function ProductDetailPage() {
                 {signedUrl ? (
                   product.media_type === "video" ? (
                     <video
+                      key={signedUrl}
                       src={signedUrl}
                       className="max-w-full max-h-[70vh] w-auto h-auto block"
                       controls
@@ -245,6 +246,8 @@ function ProductDetailPage() {
                       playsInline
                       controlsList="nodownload"
                       preload="auto"
+                      onCanPlay={() => console.log("Product detail video can play")}
+                      onError={(e) => console.error("Product detail video error:", e)}
                     />
                   ) : (
                     <img
