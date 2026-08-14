@@ -246,6 +246,8 @@ function ProductDetailPage() {
                       playsInline
                       controlsList="nodownload"
                       preload="auto"
+                      onCanPlay={() => console.log("Product detail video can play")}
+                      onError={(e) => console.error("Product detail video error:", e)}
                     />
                   ) : (
                     <img
