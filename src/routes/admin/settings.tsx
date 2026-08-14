@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, KeyRound } from "lucide-react";
+import { Loader2, KeyRound, Share2, MessageSquare, Video } from "lucide-react";
 import { listAdminUsers } from "@/lib/admin.functions";
 import { useServerFn } from "@tanstack/react-start";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/admin/settings")({
   component: AdminSettings,
@@ -22,6 +23,58 @@ function AdminSettings() {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data: settings, isLoading: settingsLoading } = useQuery({
+    queryKey: ["settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("settings").select("*");
+      if (error) throw error;
+      const settingsMap: Record<string, any> = {};
+      data.forEach((s) => {
+        settingsMap[s.key] = s.value;
+      });
+      return settingsMap;
+    },
+  });
+
+  const [whatsapp, setWhatsapp] = useState("");
+  const [tiktok, setTiktok] = useState("");
+
+  useEffect(() => {
+    if (settings) {
+      setWhatsapp(settings["whatsapp_number"] || "");
+      setTiktok(settings["tiktok_url"] || "");
+    }
+  }, [settings]);
+
+  const updateSettingsMutation = useMutation({
+    mutationFn: async ({ whatsapp, tiktok }: { whatsapp: string; tiktok: string }) => {
+      const updates = [
+        { key: "whatsapp_number", value: whatsapp },
+        { key: "tiktok_url", value: tiktok },
+      ];
+
+      for (const update of updates) {
+        const { error } = await supabase
+          .from("settings")
+          .upsert(update, { onConflict: "key" });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["settings"] });
+      toast.success("Social links updated successfully");
+    },
+    onError: (error) => {
+      toast.error("Failed to update social links: " + error.message);
+    },
+  });
+
+  const handleUpdateSocials = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateSettingsMutation.mutate({ whatsapp, tiktok });
+  };
 
   const listAdmins = useServerFn(listAdminUsers);
 
@@ -64,16 +117,12 @@ function AdminSettings() {
 
     setLoading(true);
     try {
-      // 1. Get current session
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError || !session) {
         throw new Error("Authentication session expired. Please log in again.");
       }
 
-      // 2. Verify current password by attempting a re-login/re-auth
-      // Supabase doesn't have a direct "verifyPassword" for the current session,
-      // so we use signInWithPassword which will verify credentials.
       const { error: authError } = await supabase.auth.signInWithPassword({
         email: session.user.email!,
         password: currentPassword,
@@ -83,7 +132,6 @@ function AdminSettings() {
         throw new Error("Current password is incorrect.");
       }
 
-      // 3. Update to new password
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword,
       });
@@ -100,7 +148,6 @@ function AdminSettings() {
       console.error("Password update error:", error);
       let errorMessage = error.message || "Failed to update password";
       
-      // Specifically handle the "weak_password" error from Supabase
       if (error.code === 'weak_password') {
         errorMessage = "This password is too common or easy to guess. Please choose a stronger password with a mix of letters, numbers, and symbols.";
       } else if (error.message && error.message.toLowerCase().includes("weak to guess")) {
@@ -115,7 +162,6 @@ function AdminSettings() {
     }
   };
 
-
   return (
     <div className="max-w-2xl mx-auto space-y-6 pb-20">
       <div>
@@ -123,7 +169,68 @@ function AdminSettings() {
         <p className="text-muted-foreground">Manage your admin account and portal access.</p>
       </div>
 
-      {/* Change Password */}
+      <Card className="bg-card/50 border-border/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Share2 className="h-5 w-5 text-primary" />
+            Social Media Links
+          </CardTitle>
+          <CardDescription>
+            Update your WhatsApp number and TikTok profile link shown in the footer.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleUpdateSocials} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="whatsapp">WhatsApp Number (with country code, e.g., 923021937758)</Label>
+              <div className="relative">
+                <Input
+                  id="whatsapp"
+                  type="text"
+                  placeholder="923021937758"
+                  value={whatsapp}
+                  onChange={(e) => setWhatsapp(e.target.value)}
+                  className="bg-background/50 border-border/50 pr-10"
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  <MessageSquare className="h-4 w-4" />
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tiktok">TikTok Profile URL</Label>
+              <div className="relative">
+                <Input
+                  id="tiktok"
+                  type="url"
+                  placeholder="https://www.tiktok.com/@yourusername"
+                  value={tiktok}
+                  onChange={(e) => setTiktok(e.target.value)}
+                  className="bg-background/50 border-border/50 pr-10"
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  <Video className="h-4 w-4" />
+                </div>
+              </div>
+            </div>
+            <Button 
+              type="submit" 
+              disabled={updateSettingsMutation.isPending || settingsLoading} 
+              className="w-full sm:w-auto"
+            >
+              {updateSettingsMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Social Links"
+              )}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
       <Card className="bg-card/50 border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -213,7 +320,6 @@ function AdminSettings() {
         </CardContent>
       </Card>
 
-      {/* Account Info */}
       <Card className="bg-card/50 border-border/50">
         <CardHeader>
           <CardTitle>Account Information</CardTitle>
@@ -246,26 +352,6 @@ function AdminSettings() {
                 ))}
               </div>
             )}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-card/50 border-border/50 border-destructive/20">
-        <CardHeader>
-          <CardTitle className="text-destructive">Danger Zone</CardTitle>
-          <CardDescription>
-            These actions are permanent and cannot be undone.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg bg-destructive/5 border border-destructive/20 opacity-50">
-            <div>
-              <p className="font-medium">Reset Account Data</p>
-              <p className="text-sm text-muted-foreground">This is just a placeholder. Use with caution.</p>
-            </div>
-            <Button variant="destructive" disabled>
-              Reset Data
-            </Button>
           </div>
         </CardContent>
       </Card>

@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogIn, Play, Image as ImageIcon, ExternalLink, ChevronRight, Loader2, ShieldAlert } from "lucide-react";
+import { LogIn, Play, Image as ImageIcon, ExternalLink, ChevronRight, Loader2, ShieldAlert, MessageSquare } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useState, useEffect, useCallback, type ReactNode } from "react";
 import { toast } from "sonner";
@@ -255,11 +255,24 @@ function Index() {
     },
   });
 
-  const handleSendToEditor = (productName: string) => {
-    const phoneNumber = "923021937758";
-    const message = encodeURIComponent(productName);
+  const { data: settings } = useQuery({
+    queryKey: ["settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("settings").select("*");
+      if (error) throw error;
+      const settingsMap: Record<string, any> = {};
+      data.forEach((s) => {
+        settingsMap[s.key] = s.value;
+      });
+      return settingsMap;
+    },
+  });
+
+  const handleSendToEditor = useCallback((productName: string) => {
+    const phoneNumber = settings?.["whatsapp_number"] || "923021937758";
+    const message = encodeURIComponent(`Hi, I am interested in "${productName}". Can you provide more details?`);
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
-  };
+  }, [settings]);
 
   if (categoriesLoading || productsLoading) {
     return (
@@ -322,7 +335,11 @@ function Index() {
 
               <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
                 {categoryProducts.map((product: any) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard 
+                    key={product.id} 
+                    product={product} 
+                    whatsappNumber={settings?.["whatsapp_number"]}
+                  />
                 ))}
 
               </div>
@@ -353,12 +370,12 @@ function Index() {
           </p>
           <div className="flex gap-4">
             <Button variant="ghost" size="sm" className="text-xs uppercase tracking-widest font-bold" asChild>
-              <a href="https://wa.me/923021937758" target="_blank" rel="noreferrer">
+              <a href={`https://wa.me/${settings?.["whatsapp_number"] || "923021937758"}`} target="_blank" rel="noreferrer">
                 WhatsApp
               </a>
             </Button>
             <Button variant="ghost" size="sm" className="text-xs uppercase tracking-widest font-bold" asChild>
-              <a href="https://www.tiktok.com/@ammar.editz8" target="_blank" rel="noreferrer">
+              <a href={settings?.["tiktok_url"] || "https://www.tiktok.com/@ammar.editz8"} target="_blank" rel="noreferrer">
                 TikTok
               </a>
             </Button>
@@ -368,7 +385,7 @@ function Index() {
     </div>
   );
 }
-function ProductCard({ product }: { product: any }) {
+function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber?: string }) {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const fetchSignedUrl = useServerFn(getSignedUrl);
 
@@ -380,11 +397,11 @@ function ProductCard({ product }: { product: any }) {
     return () => { active = false; };
   }, [product.media_url, fetchSignedUrl]);
 
-  const handleSendToEditor = (productName: string) => {
-    const phoneNumber = "923021937758";
-    const message = encodeURIComponent(productName);
+  const handleSendToEditor = useCallback((productName: string) => {
+    const phoneNumber = whatsappNumber || "923021937758";
+    const message = encodeURIComponent(`Hi, I am interested in "${productName}". Can you provide more details?`);
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
-  };
+  }, [whatsappNumber]);
 
   return (
     <div
@@ -456,7 +473,7 @@ function ProductCard({ product }: { product: any }) {
           onClick={() => handleSendToEditor(product.name)}
         >
           Send to Editor
-          <ChevronRight className="h-4 w-4" />
+          <MessageSquare className="h-4 w-4" />
         </Button>
       </div>
     </div>
