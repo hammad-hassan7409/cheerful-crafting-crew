@@ -279,17 +279,20 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
               />
             </div>
  
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleFullscreen();
-              }}
-              className="text-white hover:bg-white/10 rounded-xl touch-manipulation"
-            >
-              <Maximize className="h-5 w-5" />
-            </Button>
+            {!isAudioOnly && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFullscreen();
+                }}
+                className="text-white hover:bg-white/10 rounded-xl touch-manipulation"
+              >
+                <Maximize className="h-5 w-5" />
+              </Button>
+            )}
+
           </div>
         </div>
       </div>
