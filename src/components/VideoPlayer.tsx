@@ -112,16 +112,19 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
   return (
     <div 
       ref={containerRef}
-      className={cn("flex flex-col w-full bg-black rounded-3xl overflow-hidden border border-white/10", className)}
+      className={cn("flex flex-col w-full bg-black rounded-3xl overflow-hidden border border-white/10 relative", className)}
     >
       {/* Video Area */}
-      <div className="relative w-full aspect-video bg-black flex items-center justify-center overflow-hidden">
+      <div 
+        className="relative w-full aspect-video bg-black flex items-center justify-center overflow-hidden cursor-pointer"
+        onClick={togglePlay}
+      >
         {src && (
           <video
             ref={videoRef}
             key={src}
             poster={poster}
-            className="w-full h-full object-contain"
+            className="w-full h-full object-contain pointer-events-none"
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
             onTimeUpdate={handleTimeUpdate}
@@ -139,13 +142,16 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
         )}
         
         {isLoading && !error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm z-10">
+          <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm z-10 pointer-events-none">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
           </div>
         )}
 
         {error && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900 z-10 p-6 text-center">
+          <div 
+            className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900 z-10 p-6 text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
             <p className="text-destructive font-bold mb-4">{error}</p>
             <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
               <RotateCcw className="mr-2 h-4 w-4" /> Retry
@@ -159,14 +165,17 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
         {/* Progress Slider */}
         <div 
           className="relative w-full h-1.5 bg-white/10 rounded-full cursor-pointer group"
-          onClick={handleSeek}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleSeek(e);
+          }}
         >
           <div 
-            className="absolute top-0 left-0 h-full bg-primary rounded-full" 
+            className="absolute top-0 left-0 h-full bg-primary rounded-full pointer-events-none" 
             style={{ width: `${progress}%` }}
           />
           <div 
-            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
             style={{ left: `calc(${progress}% - 6px)` }}
           />
         </div>
@@ -176,7 +185,10 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             <Button
               variant="ghost"
               size="icon"
-              onClick={togglePlay}
+              onClick={(e) => {
+                e.stopPropagation();
+                togglePlay();
+              }}
               className="text-white hover:bg-white/10 rounded-xl"
               disabled={!!error}
             >
@@ -193,7 +205,10 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={toggleMute}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleMute();
+                }}
                 className="text-white hover:bg-white/10 rounded-xl"
               >
                 {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
@@ -205,14 +220,18 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
                 step="0.1"
                 value={isMuted ? 0 : volume}
                 onChange={handleVolumeChange}
+                onClick={(e) => e.stopPropagation()}
                 className="w-20 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
               />
             </div>
-
+ 
             <Button
               variant="ghost"
               size="icon"
-              onClick={toggleFullscreen}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFullscreen();
+              }}
               className="text-white hover:bg-white/10 rounded-xl"
             >
               <Maximize className="h-5 w-5" />
