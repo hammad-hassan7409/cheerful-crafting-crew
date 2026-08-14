@@ -253,7 +253,7 @@ function ProductFormPage() {
         <h1 className="text-3xl font-bold">{isNew ? "Add Product" : "Edit Product"}</h1>
       </div>
 
-      <form onSubmit={form.handleSubmit((v) => mutation.mutate(v as any))} className="space-y-6">
+      <form onSubmit={form.handleSubmit((v) => mutation.mutate(v))} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="name">Product Name</Label>
           <Input id="name" {...form.register("name")} />
