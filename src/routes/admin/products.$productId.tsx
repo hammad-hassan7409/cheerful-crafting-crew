@@ -40,7 +40,7 @@ type ProductFormValues = {
   media_type: "video" | "image";
   original_price: number;
   discounted_price: number;
-  description: string;
+  description: string | undefined;
 };
 
 export const Route = createFileRoute("/admin/products/$productId")({
@@ -143,7 +143,7 @@ function ProductFormPage() {
         }
         return data;
       } else {
-        const { data, error } = await supabase.from("products").update(values).eq("id", productId).select();
+        const { data, error } = await supabase.from("products").update(payload).eq("id", productId).select();
         if (error) {
           console.error("Update error:", error);
           throw error;
