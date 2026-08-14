@@ -165,14 +165,17 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
         {/* Progress Slider */}
         <div 
           className="relative w-full h-1.5 bg-white/10 rounded-full cursor-pointer group"
-          onClick={handleSeek}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleSeek(e);
+          }}
         >
           <div 
-            className="absolute top-0 left-0 h-full bg-primary rounded-full" 
+            className="absolute top-0 left-0 h-full bg-primary rounded-full pointer-events-none" 
             style={{ width: `${progress}%` }}
           />
           <div 
-            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
             style={{ left: `calc(${progress}% - 6px)` }}
           />
         </div>
