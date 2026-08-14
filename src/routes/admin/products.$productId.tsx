@@ -228,6 +228,7 @@ function ProductFormPage() {
       }
       
       form.setValue("media_url", "", { shouldValidate: true });
+
       queryClient.invalidateQueries({ queryKey: ["storage-usage"] });
       toast.success("Media removed");
     } catch (error: any) {
