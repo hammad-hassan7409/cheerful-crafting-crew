@@ -4,11 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { LogIn, Play, Image as ImageIcon, ExternalLink, ChevronRight, Loader2, ShieldAlert, MessageSquare, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { useState, useEffect, useCallback, type ReactNode } from "react";
+import { useState, useEffect, useCallback, type ReactNode, memo } from "react";
 import { toast } from "sonner";
-import { getSignedUrl } from "@/lib/media.functions";
-import { useServerFn } from "@tanstack/react-start";
-
+import { useSignedUrl } from "@/hooks/use-signed-url";
+import { cn } from "@/lib/utils";
 
 import {
   Dialog,
@@ -148,55 +147,36 @@ function ProtectedMedia({
   );
 }
 
-function VideoPreview({ mediaUrl }: { mediaUrl: string }) {
+const VideoPreview = memo(function VideoPreview({ mediaUrl }: { mediaUrl: string }) {
   const [isLoading, setIsLoading] = useState(true);
-  const [progress, setProgress] = useState(0);
-  const [signedUrl, setSignedUrl] = useState<string | null>(null);
-  const fetchSignedUrl = useServerFn(getSignedUrl);
+  const { url: signedUrl } = useSignedUrl(mediaUrl);
 
-  useEffect(() => {
-    let active = true;
-    fetchSignedUrl({ data: { path: mediaUrl } }).then(url => {
-      if (active) setSignedUrl(url);
-    });
-    return () => { active = false; };
-  }, [mediaUrl, fetchSignedUrl]);
-
+  const showLoader = !signedUrl || isLoading;
 
   return (
     <ProtectedMedia type="video">
-      {isLoading && (
+      {showLoader && (
         <div className="absolute inset-0 flex items-center justify-center bg-muted/50 backdrop-blur-sm z-10 transition-opacity duration-300">
           <div className="flex flex-col items-center gap-3 w-3/4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Initializing</span>
-            <Progress value={progress} className="h-1 bg-white/10" />
           </div>
         </div>
       )}
       {signedUrl && (
         <video
           src={signedUrl}
-          className={`max-w-full max-h-full w-auto h-auto object-contain grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+          className={cn(
+            "max-w-full max-h-full w-auto h-auto object-contain grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500",
+            isLoading ? "opacity-0" : "opacity-100"
+          )}
           muted
           playsInline
           loop
           preload="metadata"
           controlsList="nodownload"
-          onProgress={(e) => {
-            const video = e.currentTarget;
-            if (video.buffered.length > 0) {
-              const buffered = video.buffered.end(video.buffered.length - 1);
-              const duration = video.duration;
-              if (duration > 0) {
-                setProgress((buffered / duration) * 100);
-              }
-            }
-          }}
-          onLoadedData={() => {
-            setIsLoading(false);
-            setProgress(100);
-          }}
+          onCanPlay={() => setIsLoading(false)}
+          onLoadedData={() => setIsLoading(false)}
           onMouseEnter={(e) => !isLoading && e.currentTarget.play()}
           onMouseLeave={(e) => {
             if (!isLoading) {
@@ -215,28 +195,18 @@ function VideoPreview({ mediaUrl }: { mediaUrl: string }) {
       )}
     </ProtectedMedia>
   );
-}
+});
 
 function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName: string }) {
   const [isLoading, setIsLoading] = useState(true);
-  const [progress, setProgress] = useState(0);
-  const [signedUrl, setSignedUrl] = useState<string | null>(null);
-  const fetchSignedUrl = useServerFn(getSignedUrl);
+  const { url: signedUrl } = useSignedUrl(mediaUrl);
 
-  useEffect(() => {
-    let active = true;
-    fetchSignedUrl({ data: { path: mediaUrl } }).then(url => {
-      if (active) setSignedUrl(url);
-    });
-    return () => { active = false; };
-  }, [mediaUrl, fetchSignedUrl]);
-
+  const showLoader = !signedUrl || isLoading;
 
   return (
     <Dialog onOpenChange={(open) => {
       if (!open) {
         setIsLoading(true);
-        setProgress(0);
       }
     }}>
       <DialogTrigger asChild>
@@ -251,38 +221,28 @@ function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName:
         
         <div className="relative w-full bg-black flex items-center justify-center min-h-[300px]">
           <ProtectedMedia type="video">
-            {isLoading && (
+            {showLoader && (
               <div className="absolute inset-0 flex items-center justify-center z-10">
                 <div className="flex flex-col items-center gap-4 w-1/2">
                   <Loader2 className="h-10 w-10 animate-spin text-primary" />
                   <span className="text-xs font-bold uppercase tracking-tighter text-white/60">Buffering Preview</span>
-                  <Progress value={progress} className="h-1 bg-white/10" />
                 </div>
               </div>
             )}
             {signedUrl && (
               <video
                 src={signedUrl}
-                className={`max-w-full max-h-[80vh] w-auto h-auto bg-black transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+                className={cn(
+                  "max-w-full max-h-[80vh] w-auto h-auto bg-black transition-opacity duration-500",
+                  isLoading ? "opacity-0" : "opacity-100"
+                )}
                 controls
                 autoPlay
                 playsInline
                 preload="auto"
                 controlsList="nodownload"
-                onProgress={(e) => {
-                  const video = e.currentTarget;
-                  if (video.buffered.length > 0) {
-                    const buffered = video.buffered.end(video.buffered.length - 1);
-                    const duration = video.duration;
-                    if (duration > 0) {
-                      setProgress((buffered / duration) * 100);
-                    }
-                  }
-                }}
-                onLoadedData={() => {
-                  setIsLoading(false);
-                  setProgress(100);
-                }}
+                onCanPlay={() => setIsLoading(false)}
+                onLoadedData={() => setIsLoading(false)}
               />
             )}
           </ProtectedMedia>
@@ -291,8 +251,6 @@ function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName:
     </Dialog>
   );
 }
-
-
 
 function ImageZoomDialog({ signedUrl, productName }: { signedUrl: string | null; productName: string }) {
   const [zoom, setZoom] = useState(1);
@@ -358,13 +316,11 @@ function Index() {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
-        // This is a common trigger point for screenshot tools on some OSs 
-        // or just general deterrence when leaving the tab.
+        // Deterrence logic can go here
       }
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Deter common shortcut for screenshots/save (though we can't stop OS level)
       if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'p')) {
         e.preventDefault();
         toast.warning("Printing and saving are disabled to protect AR EDITZ samples.", {
@@ -380,7 +336,6 @@ function Index() {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
-
 
   const { data: categories, isLoading: categoriesLoading } = useQuery({
     queryKey: ["categories"],
@@ -498,7 +453,6 @@ function Index() {
                     />
                   </Link>
                 ))}
-
               </div>
             </section>
           );
@@ -542,17 +496,9 @@ function Index() {
     </div>
   );
 }
-function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber?: string }) {
-  const [signedUrl, setSignedUrl] = useState<string | null>(null);
-  const fetchSignedUrl = useServerFn(getSignedUrl);
 
-  useEffect(() => {
-    let active = true;
-    fetchSignedUrl({ data: { path: product.media_url } }).then(url => {
-      if (active) setSignedUrl(url);
-    });
-    return () => { active = false; };
-  }, [product.media_url, fetchSignedUrl]);
+function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber?: string }) {
+  const { url: signedUrl } = useSignedUrl(product.media_url);
 
   const handleSendToEditor = useCallback((productName: string) => {
     const phoneNumber = whatsappNumber || "923021937758";

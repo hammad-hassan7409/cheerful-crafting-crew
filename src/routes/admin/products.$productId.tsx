@@ -11,37 +11,15 @@ import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 import { useServerFn } from "@tanstack/react-start";
 import { getSignedUrl } from "@/lib/media.functions";
+import { useSignedUrl } from "@/hooks/use-signed-url";
 import { getStorageUsage } from "@/lib/storage.functions";
+import { productSchema, type ProductFormValues, getCategories, getProduct } from "@/lib/products-admin.functions";
 
 import { useState, useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-
-const productSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  category_id: z.string().uuid("Category is required"),
-  media_url: z.string().min(1, "Please upload a media file"),
-  media_type: z.enum(["video", "image"]),
-  original_price: z.number().min(0),
-  discounted_price: z.number().min(0),
-  description: z.string().refine((val) => {
-    if (!val) return true;
-    const words = val.trim().split(/\s+/).filter(word => word.length > 0);
-    return words.length <= 500;
-  }, "Maximum description length is 500 words"),
-});
-
-type ProductFormValues = {
-  name: string;
-  category_id: string;
-  media_url: string;
-  media_type: "video" | "image";
-  original_price: number;
-  discounted_price: number;
-  description: string;
-};
 
 export const Route = createFileRoute("/admin/products/$productId")({
   component: ProductFormPage,
@@ -57,8 +35,6 @@ function ProductFormPage() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [localPreview, setLocalPreview] = useState<string | null>(null);
-  const [signedUrl, setSignedUrl] = useState<string | null>(null);
-  const fetchSignedUrl = useServerFn(getSignedUrl);
   const fetchStorage = useServerFn(getStorageUsage);
 
   const { data: storageInfo } = useQuery({
@@ -70,21 +46,12 @@ function ProductFormPage() {
 
   const { data: categories } = useQuery({
     queryKey: ["categories"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("categories").select("*").order("name");
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => getCategories(),
   });
 
   const { data: product, isLoading: productLoading } = useQuery({
     queryKey: ["product", productId],
-    queryFn: async () => {
-      if (isNew) return null;
-      const { data, error } = await supabase.from("products").select("*").eq("id", productId).single();
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => getProduct(productId),
     enabled: !isNew,
   });
 
@@ -113,14 +80,10 @@ function ProductFormPage() {
     }
   }, [product, form]);
 
-  useEffect(() => {
-    const mediaUrl = form.watch("media_url");
-    if (mediaUrl && !mediaUrl.startsWith("blob:")) {
-      fetchSignedUrl({ data: { path: mediaUrl } }).then(url => setSignedUrl(url));
-    } else {
-      setSignedUrl(null);
-    }
-  }, [form.watch("media_url"), fetchSignedUrl]);
+  const watchMediaUrl = form.watch("media_url");
+  const { url: signedUrl } = useSignedUrl(
+    watchMediaUrl && !watchMediaUrl.startsWith("blob:") ? watchMediaUrl : null
+  );
 
 
   // Clean up object URL when component unmounts or preview changes
@@ -174,26 +137,17 @@ function ProductFormPage() {
     setUploadError(null);
     setPendingFile(file);
 
+    // Update form type immediately
+    form.setValue("media_type", file.type.startsWith("video") ? "video" : "image", { shouldValidate: true });
+
     // Create local preview immediately
     const previewUrl = URL.createObjectURL(file);
     setLocalPreview(previewUrl);
-    form.setValue("media_type", file.type.startsWith("video") ? "video" : "image", { shouldValidate: true });
 
     try {
-      // 1. Ensure bucket exists (Try to create if it doesn't - will fail if RLS prevents but good attempt)
-      // This is a common issue where the bucket is missing in the specific environment.
-      // We try to use it and handle errors.
-      
       const fileExt = file.name.split(".").pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `${fileName}`;
-
-      const interval = setInterval(() => {
-        setUploadProgress((prev) => {
-          if (prev >= 95) return prev;
-          return prev + 5;
-        });
-      }, 200);
 
       const { data: uploadData, error: uploadErr } = await supabase.storage
         .from("product-media")
@@ -202,10 +156,7 @@ function ProductFormPage() {
           upsert: false
         });
 
-      clearInterval(interval);
-
       if (uploadErr) {
-        // Technical cause identified: If bucket doesn't exist or RLS fails
         throw uploadErr;
       }
 
@@ -325,6 +276,7 @@ function ProductFormPage() {
                     controls
                     autoPlay
                     muted
+                    preload="auto"
                     key={displayUrl} // Force reload when URL changes
                   />
                 ) : (
@@ -353,9 +305,11 @@ function ProductFormPage() {
                 )}
 
                 {uploading && (
-                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center p-6 text-white space-y-3">
-                    <Progress value={uploadProgress} className="w-full h-2" />
-                    <p className="text-sm font-bold animate-pulse">Uploading to server...</p>
+                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center p-6 text-white space-y-4">
+                    <div className="flex flex-col items-center gap-2 w-full max-w-[200px]">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      <p className="text-xs font-bold uppercase tracking-widest text-white/90">Uploading</p>
+                    </div>
                   </div>
                 )}
               </div>
