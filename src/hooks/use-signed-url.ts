@@ -21,11 +21,12 @@ export function useSignedUrl(path: string | null | undefined) {
       return;
     }
 
-    // If it's already a public URL that seems to work, just use it
-    if (path.includes('/storage/v1/object/public/')) {
-      setUrl(path);
-      return;
-    }
+    // Force signed URL for all storage objects, even if they look like public URLs
+    // (This ensures private buckets work correctly)
+    // if (path.includes('/storage/v1/object/public/')) {
+    //   setUrl(path);
+    //   return;
+    // }
 
     // Check cache
     const cached = urlCache[path];
