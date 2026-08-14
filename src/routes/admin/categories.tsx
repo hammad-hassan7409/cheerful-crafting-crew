@@ -43,6 +43,27 @@ function CategoriesPage() {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, name }: { id: string; name: string }) => {
+      if (!name.trim()) throw new Error("Category name is required");
+      const { error } = await supabase
+        .from("categories")
+        .update({ name: name.trim().toUpperCase() })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Category updated");
+      setEditingId(null);
+      setEditingName("");
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to update category");
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("categories").delete().eq("id", id);
