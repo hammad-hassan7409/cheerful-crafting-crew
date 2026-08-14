@@ -124,7 +124,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
     >
       {/* Media Area */}
       <div 
-        className="relative w-full aspect-video bg-black flex items-center justify-center overflow-hidden cursor-pointer"
+        className="relative w-full aspect-video bg-zinc-900 flex items-center justify-center overflow-hidden cursor-pointer"
         onClick={togglePlay}
       >
         {src && (
