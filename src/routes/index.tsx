@@ -473,7 +473,7 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
           onClick={() => handleSendToEditor(product.name)}
         >
           Send to Editor
-          <ChevronRight className="h-4 w-4" />
+          <MessageSquare className="h-4 w-4" />
         </Button>
       </div>
     </div>
