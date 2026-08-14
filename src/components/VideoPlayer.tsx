@@ -164,10 +164,20 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
       <div className="w-full bg-zinc-950 p-4 border-t border-white/5 space-y-4">
         {/* Progress Slider */}
         <div 
-          className="relative w-full h-1.5 bg-white/10 rounded-full cursor-pointer group"
-          onClick={(e) => {
+          className="relative w-full h-2 bg-white/10 rounded-full cursor-pointer group"
+          onMouseDown={(e) => {
             e.stopPropagation();
-            handleSeek(e);
+            handleSeek(e as unknown as React.MouseEvent<HTMLDivElement>);
+          }}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+            // Get coordinates from touch
+            const touch = e.touches[0];
+            const rect = e.currentTarget.getBoundingClientRect();
+            const pos = (touch.clientX - rect.left) / rect.width;
+            if (videoRef.current) {
+              videoRef.current.currentTime = pos * videoRef.current.duration;
+            }
           }}
         >
           <div 
@@ -175,8 +185,8 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             style={{ width: `${progress}%` }}
           />
           <div 
-            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-            style={{ left: `calc(${progress}% - 6px)` }}
+            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity pointer-events-none"
+            style={{ left: `calc(${progress}% - 8px)` }}
           />
         </div>
 
