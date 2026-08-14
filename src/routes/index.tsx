@@ -138,7 +138,6 @@ function ProtectedMedia({
           transform: `scale(${scale}) translate(${offset.x / scale}px, ${offset.y / scale}px)` 
         }}
       >
-        <div className="absolute inset-0 z-10 bg-transparent" />
         {children}
       </div>
     </div>

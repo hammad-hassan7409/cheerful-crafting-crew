@@ -137,7 +137,10 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             src={src}
             poster={poster}
             className="w-full h-full object-contain pointer-events-none"
-            onPlay={() => setIsPlaying(true)}
+            onPlay={() => {
+              setIsPlaying(true);
+              setIsLoading(false);
+            }}
             onPause={() => setIsPlaying(false)}
             onTimeUpdate={handleTimeUpdate}
             onLoadedMetadata={handleLoadedMetadata}
@@ -152,7 +155,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
           </video>
         )}
         
-        {isLoading && !error && (
+        {isLoading && !error && !isPlaying && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm z-10 pointer-events-none">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
           </div>
