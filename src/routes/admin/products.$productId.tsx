@@ -305,9 +305,11 @@ function ProductFormPage() {
                 )}
 
                 {uploading && (
-                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center p-6 text-white space-y-3">
-                    <Progress value={uploadProgress} className="w-full h-2" />
-                    <p className="text-sm font-bold animate-pulse">Uploading to server...</p>
+                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center p-6 text-white space-y-4">
+                    <div className="flex flex-col items-center gap-2 w-full max-w-[200px]">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      <p className="text-xs font-bold uppercase tracking-widest text-white/90">Uploading</p>
+                    </div>
                   </div>
                 )}
               </div>
