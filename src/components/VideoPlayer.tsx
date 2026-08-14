@@ -45,11 +45,19 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
     setIsLoading(false);
   };
 
-  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     if (!videoRef.current) return;
     const rect = e.currentTarget.getBoundingClientRect();
-    const pos = (e.clientX - rect.left) / rect.width;
-    videoRef.current.currentTime = pos * videoRef.current.duration;
+    let clientX: number;
+    
+    if ('clientX' in e) {
+      clientX = e.clientX;
+    } else {
+      clientX = e.touches[0]?.clientX || 0;
+    }
+    
+    const pos = (clientX - rect.left) / rect.width;
+    videoRef.current.currentTime = Math.max(0, Math.min(pos * videoRef.current.duration, videoRef.current.duration));
   };
 
   const toggleMute = () => {
@@ -117,7 +125,11 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
       {/* Video Area */}
       <div 
         className="relative w-full aspect-video bg-black flex items-center justify-center overflow-hidden cursor-pointer"
-        onClick={togglePlay}
+        onMouseDown={(e) => {
+          // On mobile, tap to play/pause is common, but we need to ensure it doesn't conflict with potential scrolling
+          // Using onMouseDown/onTouchStart instead of onClick can sometimes be more responsive
+          togglePlay();
+        }}
       >
         {src && (
           <video
@@ -164,8 +176,12 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
       <div className="w-full bg-zinc-950 p-4 border-t border-white/5 space-y-4">
         {/* Progress Slider */}
         <div 
-          className="relative w-full h-1.5 bg-white/10 rounded-full cursor-pointer group"
-          onClick={(e) => {
+          className="relative w-full h-2 bg-white/10 rounded-full cursor-pointer group"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            handleSeek(e);
+          }}
+          onTouchStart={(e) => {
             e.stopPropagation();
             handleSeek(e);
           }}
@@ -175,8 +191,8 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             style={{ width: `${progress}%` }}
           />
           <div 
-            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-            style={{ left: `calc(${progress}% - 6px)` }}
+            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity pointer-events-none"
+            style={{ left: `calc(${progress}% - 8px)` }}
           />
         </div>
 
@@ -185,11 +201,11 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             <Button
               variant="ghost"
               size="icon"
-              onClick={(e) => {
+              onMouseDown={(e) => {
                 e.stopPropagation();
                 togglePlay();
               }}
-              className="text-white hover:bg-white/10 rounded-xl"
+              className="text-white hover:bg-white/10 rounded-xl touch-manipulation"
               disabled={!!error}
             >
               {isPlaying ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current" />}
@@ -205,11 +221,11 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={(e) => {
+                onMouseDown={(e) => {
                   e.stopPropagation();
                   toggleMute();
                 }}
-                className="text-white hover:bg-white/10 rounded-xl"
+                className="text-white hover:bg-white/10 rounded-xl touch-manipulation"
               >
                 {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
               </Button>
@@ -220,7 +236,8 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
                 step="0.1"
                 value={isMuted ? 0 : volume}
                 onChange={handleVolumeChange}
-                onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
                 className="w-20 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
               />
             </div>
@@ -228,11 +245,11 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             <Button
               variant="ghost"
               size="icon"
-              onClick={(e) => {
+              onMouseDown={(e) => {
                 e.stopPropagation();
                 toggleFullscreen();
               }}
-              className="text-white hover:bg-white/10 rounded-xl"
+              className="text-white hover:bg-white/10 rounded-xl touch-manipulation"
             >
               <Maximize className="h-5 w-5" />
             </Button>
