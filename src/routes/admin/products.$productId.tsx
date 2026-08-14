@@ -172,6 +172,7 @@ function ProductFormPage() {
         .getPublicUrl(filePath);
 
       form.setValue("media_url", publicUrl, { shouldValidate: true });
+
       setPendingFile(null);
       toast.success("File uploaded successfully to storage");
     } catch (error: any) {
