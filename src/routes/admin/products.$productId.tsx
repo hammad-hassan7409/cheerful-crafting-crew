@@ -60,6 +60,7 @@ function ProductFormPage() {
     defaultValues: {
       name: "",
       media_type: "image",
+
       original_price: 0,
       discounted_price: 0,
       description: "",
