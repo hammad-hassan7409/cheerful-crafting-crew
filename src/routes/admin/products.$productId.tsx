@@ -384,6 +384,7 @@ function ProductFormPage() {
           )}
           
           <Input type="hidden" {...form.register("media_url")} />
+
           {form.formState.errors.media_url && (
             <p className="text-sm text-destructive">{form.formState.errors.media_url.message}</p>
           )}
