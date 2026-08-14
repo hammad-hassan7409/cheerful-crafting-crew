@@ -171,12 +171,12 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
           }}
           onTouchStart={(e) => {
             e.stopPropagation();
-            // Get coordinates from touch
             const touch = e.touches[0];
+            if (!touch) return;
             const rect = e.currentTarget.getBoundingClientRect();
             const pos = (touch.clientX - rect.left) / rect.width;
             if (videoRef.current) {
-              videoRef.current.currentTime = pos * videoRef.current.duration;
+              videoRef.current.currentTime = Math.max(0, Math.min(pos * videoRef.current.duration, videoRef.current.duration));
             }
           }}
         >
