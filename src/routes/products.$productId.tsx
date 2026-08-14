@@ -2,7 +2,17 @@ import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Loader2, MessageSquare, ShieldAlert, ArrowLeft, Play, Image as ImageIcon } from "lucide-react";
+import { 
+  Loader2, 
+  MessageSquare, 
+  ShieldAlert, 
+  ArrowLeft, 
+  Play, 
+  Image as ImageIcon,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw
+} from "lucide-react";
 import { useState, useEffect, useCallback, type ReactNode } from "react";
 import { toast } from "sonner";
 import { getSignedUrl } from "@/lib/media.functions";
@@ -12,7 +22,15 @@ export const Route = createFileRoute("/products/$productId")({
   component: ProductDetailPage,
 });
 
-function ProtectedMedia({ children, type = "video" }: { children: ReactNode; type?: "video" | "image" }) {
+function ProtectedMedia({ 
+  children, 
+  type = "video",
+  scale = 1
+}: { 
+  children: ReactNode; 
+  type?: "video" | "image";
+  scale?: number;
+}) {
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     toast.error("Downloads are disabled to protect AR EDITZ samples.", {
@@ -22,12 +40,17 @@ function ProtectedMedia({ children, type = "video" }: { children: ReactNode; typ
 
   return (
     <div 
-      className="relative h-full w-full select-none"
+      className="relative h-full w-full select-none overflow-hidden"
       onContextMenu={handleContextMenu}
       onDragStart={(e) => e.preventDefault()}
     >
-      {type === "image" && <div className="absolute inset-0 z-10 bg-transparent" />}
-      {children}
+      <div 
+        className="w-full h-full transition-transform duration-200 ease-out flex items-center justify-center"
+        style={{ transform: `scale(${scale})` }}
+      >
+        {type === "image" && <div className="absolute inset-0 z-10 bg-transparent cursor-default" />}
+        {children}
+      </div>
     </div>
   );
 }
@@ -35,6 +58,7 @@ function ProtectedMedia({ children, type = "video" }: { children: ReactNode; typ
 function ProductDetailPage() {
   const { productId } = useParams({ from: "/products/$productId" });
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(1);
   const fetchSignedUrl = useServerFn(getSignedUrl);
 
   const { data: product, isLoading } = useQuery({
@@ -81,6 +105,10 @@ function ProductDetailPage() {
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
   }, [product, settings]);
 
+  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.25, 3));
+  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.25, 1));
+  const handleResetZoom = () => setZoom(1);
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -126,8 +154,11 @@ function ProductDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
           {/* Media Section */}
           <div className="space-y-4">
-            <div className="aspect-video bg-muted rounded-3xl overflow-hidden border border-border/40 relative shadow-2xl">
-              <ProtectedMedia type={product.media_type as "video" | "image"}>
+            <div className="aspect-video bg-muted rounded-3xl overflow-hidden border border-border/40 relative shadow-2xl group/media">
+              <ProtectedMedia 
+                type={product.media_type as "video" | "image"} 
+                scale={product.media_type === "image" ? zoom : 1}
+              >
                 {signedUrl ? (
                   product.media_type === "video" ? (
                     <video
@@ -152,6 +183,43 @@ function ProductDetailPage() {
                   </div>
                 )}
               </ProtectedMedia>
+
+              {/* Zoom Controls */}
+              {product.media_type === "image" && signedUrl && (
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 p-2 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 opacity-0 group-hover/media:opacity-100 transition-opacity duration-300 z-20">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleZoomOut}
+                    disabled={zoom <= 1}
+                    className="h-10 w-10 rounded-xl text-white hover:bg-white/10 disabled:opacity-30"
+                  >
+                    <ZoomOut className="h-5 w-5" />
+                  </Button>
+                  <div className="w-12 text-center text-[10px] font-bold text-white uppercase tracking-widest">
+                    {Math.round(zoom * 100)}%
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleZoomIn}
+                    disabled={zoom >= 3}
+                    className="h-10 w-10 rounded-xl text-white hover:bg-white/10 disabled:opacity-30"
+                  >
+                    <ZoomIn className="h-5 w-5" />
+                  </Button>
+                  <div className="w-[1px] h-6 bg-white/10 mx-1" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleResetZoom}
+                    disabled={zoom === 1}
+                    className="h-10 w-10 rounded-xl text-white hover:bg-white/10 disabled:opacity-30"
+                  >
+                    <RotateCcw className="h-5 w-5" />
+                  </Button>
+                </div>
+              )}
             </div>
             
             <div className="flex items-center gap-2 px-2">
