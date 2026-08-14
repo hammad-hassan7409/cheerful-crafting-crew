@@ -351,10 +351,15 @@ function Index() {
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} AR EDITZ. All creative rights reserved.
           </p>
-          <div className="flex gap-6">
+          <div className="flex gap-4">
             <Button variant="ghost" size="sm" className="text-xs uppercase tracking-widest font-bold" asChild>
               <a href="https://wa.me/923021937758" target="_blank" rel="noreferrer">
                 WhatsApp
+              </a>
+            </Button>
+            <Button variant="ghost" size="sm" className="text-xs uppercase tracking-widest font-bold" asChild>
+              <a href="https://www.tiktok.com/@ammar.editz8" target="_blank" rel="noreferrer">
+                TikTok
               </a>
             </Button>
           </div>
