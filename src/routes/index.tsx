@@ -165,6 +165,7 @@ const VideoPreview = memo(function VideoPreview({ mediaUrl }: { mediaUrl: string
       )}
       {signedUrl && (
         <video
+          key={signedUrl}
           src={signedUrl}
           className={cn(
             "max-w-full max-h-full w-auto h-auto object-contain grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500",
@@ -173,15 +174,16 @@ const VideoPreview = memo(function VideoPreview({ mediaUrl }: { mediaUrl: string
           muted
           playsInline
           loop
-          preload="metadata"
+          preload="auto"
           controlsList="nodownload"
           onCanPlay={() => setIsLoading(false)}
           onLoadedData={() => setIsLoading(false)}
           onMouseEnter={(e) => {
             if (!isLoading) {
-              e.currentTarget.play().catch(err => {
-                console.error("Autoplay failed:", err);
-              });
+              const playPromise = e.currentTarget.play();
+              if (playPromise !== undefined) {
+                playPromise.catch(err => console.error("Autoplay error:", err));
+              }
             }
           }}
           onMouseLeave={(e) => {
