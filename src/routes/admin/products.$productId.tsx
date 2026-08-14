@@ -110,17 +110,11 @@ function ProductFormPage() {
       };
       if (isNew) {
         const { data, error } = await supabase.from("products").insert([payload]).select();
-        if (error) {
-          console.error("Insert error:", error);
-          throw error;
-        }
+        if (error) throw error;
         return data;
       } else {
         const { data, error } = await supabase.from("products").update(payload).eq("id", productId).select();
-        if (error) {
-          console.error("Update error:", error);
-          throw error;
-        }
+        if (error) throw error;
         return data;
       }
     },
