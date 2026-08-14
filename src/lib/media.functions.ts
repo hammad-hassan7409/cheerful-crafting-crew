@@ -52,8 +52,13 @@ export const getSignedUrl = createServerFn({ method: "GET" })
     if (error || !signedData?.signedUrl) {
       console.error("[MediaFn] Error generating signed URL for path:", decodedPath, error);
       
-      // Fallback: If signing fails but the bucket is public, we might be able to use the public URL
-      // However, we strictly follow the signed URL requirement for protection.
+      // If the error is that the object was not found, return null instead of throwing
+      // This allows the UI to handle the missing media gracefully
+      if (error?.message?.includes('Object not found') || (error as any)?.status === 404 || (error as any)?.code === 'NoSuchKey') {
+        console.warn(`[MediaFn] Media file not found: ${decodedPath}`);
+        return null;
+      }
+      
       throw new Error(`Failed to generate access to media: ${error?.message || 'Unknown error'}`);
     }
 
