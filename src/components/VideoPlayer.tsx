@@ -139,9 +139,12 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
       ref={containerRef}
       className={cn("flex flex-col w-full bg-black rounded-3xl overflow-hidden border border-white/10 relative", className)}
     >
-      {/* Video Area */}
+      {/* Media Area */}
       <div 
-        className="relative w-full aspect-video bg-black flex items-center justify-center overflow-hidden cursor-pointer"
+        className={cn(
+          "relative w-full bg-black flex items-center justify-center overflow-hidden cursor-pointer",
+          isAudioOnly ? "aspect-[16/7]" : "aspect-video"
+        )}
         onClick={(e) => {
           // Toggle play on click, but avoid double firing if control buttons are clicked
           togglePlay();
@@ -152,8 +155,11 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             ref={videoRef}
             key={src}
             src={src}
-            poster={poster}
-            className="w-full h-full object-contain pointer-events-none"
+            poster={isAudioOnly ? undefined : poster}
+            className={cn(
+              "pointer-events-none",
+              isAudioOnly ? "absolute w-px h-px opacity-0" : "w-full h-full object-contain"
+            )}
             onPlay={() => {
               setIsPlaying(true);
               setIsLoading(false);
@@ -161,8 +167,12 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             onPause={() => setIsPlaying(false)}
             onTimeUpdate={handleTimeUpdate}
             onLoadedMetadata={handleLoadedMetadata}
+            onLoadedData={detectAudioOnly}
             onWaiting={() => setIsLoading(true)}
-            onCanPlay={() => setIsLoading(false)}
+            onCanPlay={() => {
+              setIsLoading(false);
+              detectAudioOnly();
+            }}
             onError={handleError}
             playsInline
             preload="metadata"
@@ -171,6 +181,19 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             Your browser does not support the video tag.
           </video>
         )}
+
+        {isAudioOnly && !error && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-zinc-900 to-black pointer-events-none">
+            <div className={cn(
+              "flex items-center justify-center h-16 w-16 rounded-2xl bg-primary/15 border border-primary/30",
+              isPlaying && "animate-pulse"
+            )}>
+              <Music2 className="h-8 w-8 text-primary" />
+            </div>
+            <p className="text-[10px] font-bold text-white/60 uppercase tracking-[0.2em]">Audio Track</p>
+          </div>
+        )}
+
         
         {isLoading && !error && !isPlaying && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm z-10 pointer-events-none">
