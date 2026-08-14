@@ -9,12 +9,22 @@ export const getSignedUrl = createServerFn({ method: "GET" })
     
     // Path might be a full URL if it was already saved that way
     let filePath: string = data.path;
-    if (filePath.includes("product-media/")) {
-      const parts = filePath.split("product-media/");
-      const lastPart = parts[parts.length - 1];
-      if (!lastPart) throw new Error("Invalid media path");
-      filePath = lastPart;
+    
+    // If it's a full URL, we need to extract the path within the bucket
+    if (filePath.startsWith('http')) {
+      try {
+        const url = new URL(filePath);
+        const pathParts = url.pathname.split('/product-media/');
+        if (pathParts.length > 1) {
+          filePath = pathParts[pathParts.length - 1]!;
+        }
+      } catch (e) {
+        console.error("Error parsing media URL:", e);
+      }
     }
+    
+    // Clean up query parameters if they exist in the path
+    filePath = filePath.split('?')[0]!;
 
     
     if (!filePath) {
