@@ -255,8 +255,21 @@ function Index() {
     },
   });
 
+  const { data: settings } = useQuery({
+    queryKey: ["settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("settings").select("*");
+      if (error) throw error;
+      const settingsMap: Record<string, any> = {};
+      data.forEach((s) => {
+        settingsMap[s.key] = s.value;
+      });
+      return settingsMap;
+    },
+  });
+
   const handleSendToEditor = (productName: string) => {
-    const phoneNumber = "923021937758";
+    const phoneNumber = settings?.["whatsapp_number"] || "923021937758";
     const message = encodeURIComponent(productName);
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
   };
