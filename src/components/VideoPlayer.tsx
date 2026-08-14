@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw, Loader2, Music2 } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -20,8 +20,6 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
   const [currentTime, setCurrentTime] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isAudioOnly, setIsAudioOnly] = useState(false);
-
 
   const togglePlay = useCallback(() => {
     if (!videoRef.current) return;
@@ -41,26 +39,11 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
     setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100);
   };
 
-  const detectAudioOnly = useCallback(() => {
-    const el = videoRef.current;
-    if (!el) return;
-    // A media file with no video track reports zero intrinsic dimensions.
-    if (el.readyState >= 1 && el.videoWidth === 0 && el.videoHeight === 0) {
-      setIsAudioOnly(true);
-    }
-  }, []);
-
   const handleLoadedMetadata = () => {
     if (!videoRef.current) return;
     setDuration(videoRef.current.duration);
     setIsLoading(false);
-    detectAudioOnly();
   };
-
-  useEffect(() => {
-    setIsAudioOnly(false);
-  }, [src]);
-
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     if (!videoRef.current) return;
@@ -141,25 +124,16 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
     >
       {/* Media Area */}
       <div 
-        className={cn(
-          "relative w-full bg-black flex items-center justify-center overflow-hidden cursor-pointer",
-          isAudioOnly ? "aspect-[16/7]" : "aspect-video"
-        )}
-        onClick={(e) => {
-          // Toggle play on click, but avoid double firing if control buttons are clicked
-          togglePlay();
-        }}
+        className="relative w-full aspect-video bg-black flex items-center justify-center overflow-hidden cursor-pointer"
+        onClick={togglePlay}
       >
         {src && (
           <video
             ref={videoRef}
             key={src}
             src={src}
-            poster={isAudioOnly ? undefined : poster}
-            className={cn(
-              "pointer-events-none",
-              isAudioOnly ? "absolute w-px h-px opacity-0" : "w-full h-full object-contain"
-            )}
+            poster={poster}
+            className="w-full h-full object-contain pointer-events-none"
             onPlay={() => {
               setIsPlaying(true);
               setIsLoading(false);
@@ -167,12 +141,8 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             onPause={() => setIsPlaying(false)}
             onTimeUpdate={handleTimeUpdate}
             onLoadedMetadata={handleLoadedMetadata}
-            onLoadedData={detectAudioOnly}
             onWaiting={() => setIsLoading(true)}
-            onCanPlay={() => {
-              setIsLoading(false);
-              detectAudioOnly();
-            }}
+            onCanPlay={() => setIsLoading(false)}
             onError={handleError}
             playsInline
             preload="metadata"
@@ -182,19 +152,6 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
           </video>
         )}
 
-        {isAudioOnly && !error && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-zinc-900 to-black pointer-events-none">
-            <div className={cn(
-              "flex items-center justify-center h-16 w-16 rounded-2xl bg-primary/15 border border-primary/30",
-              isPlaying && "animate-pulse"
-            )}>
-              <Music2 className="h-8 w-8 text-primary" />
-            </div>
-            <p className="text-[10px] font-bold text-white/60 uppercase tracking-[0.2em]">Audio Track</p>
-          </div>
-        )}
-
-        
         {isLoading && !error && !isPlaying && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm z-10 pointer-events-none">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -279,20 +236,17 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
               />
             </div>
  
-            {!isAudioOnly && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleFullscreen();
-                }}
-                className="text-white hover:bg-white/10 rounded-xl touch-manipulation"
-              >
-                <Maximize className="h-5 w-5" />
-              </Button>
-            )}
-
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFullscreen();
+              }}
+              className="text-white hover:bg-white/10 rounded-xl touch-manipulation"
+            >
+              <Maximize className="h-5 w-5" />
+            </Button>
           </div>
         </div>
       </div>
