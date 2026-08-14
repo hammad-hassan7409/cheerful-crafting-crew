@@ -15,6 +15,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
+import { Route as ProductsProductIdRouteImport } from './routes/products.$productId'
 import { Route as AdminProductsProductIdRouteImport } from './routes/admin/products.$productId'
 import { Route as ApiPublicSetupStorageRouteImport } from './routes/api/public/setup-storage'
 
@@ -48,6 +49,11 @@ const AdminSettingsRoute = AdminSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AdminRoute,
 } as any)
+const ProductsProductIdRoute = ProductsProductIdRouteImport.update({
+  id: '/products/$productId',
+  path: '/products/$productId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminProductsProductIdRoute = AdminProductsProductIdRouteImport.update({
   id: '/products/$productId',
   path: '/products/$productId',
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/products/$productId': typeof ProductsProductIdRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/products/$productId': typeof AdminProductsProductIdRoute
   '/api/public/setup-storage': typeof ApiPublicSetupStorageRoute
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/products/$productId': typeof ProductsProductIdRoute
   '/admin': typeof AdminIndexRoute
   '/admin/products/$productId': typeof AdminProductsProductIdRoute
   '/api/public/setup-storage': typeof ApiPublicSetupStorageRoute
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/products/$productId': typeof ProductsProductIdRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/products/$productId': typeof AdminProductsProductIdRoute
   '/api/public/setup-storage': typeof ApiPublicSetupStorageRoute
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/admin/categories'
     | '/admin/settings'
+    | '/products/$productId'
     | '/admin/'
     | '/admin/products/$productId'
     | '/api/public/setup-storage'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/admin/categories'
     | '/admin/settings'
+    | '/products/$productId'
     | '/admin'
     | '/admin/products/$productId'
     | '/api/public/setup-storage'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/admin/categories'
     | '/admin/settings'
+    | '/products/$productId'
     | '/admin/'
     | '/admin/products/$productId'
     | '/api/public/setup-storage'
@@ -125,6 +137,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   LoginRoute: typeof LoginRoute
+  ProductsProductIdRoute: typeof ProductsProductIdRoute
   ApiPublicSetupStorageRoute: typeof ApiPublicSetupStorageRoute
 }
 
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/products/$productId': {
+      id: '/products/$productId'
+      path: '/products/$productId'
+      fullPath: '/products/$productId'
+      preLoaderRoute: typeof ProductsProductIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/products/$productId': {
       id: '/admin/products/$productId'
       path: '/products/$productId'
@@ -209,6 +229,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   LoginRoute: LoginRoute,
+  ProductsProductIdRoute: ProductsProductIdRoute,
   ApiPublicSetupStorageRoute: ApiPublicSetupStorageRoute,
 }
 export const routeTree = rootRouteImport

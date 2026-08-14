@@ -64,13 +64,13 @@ function ProductDetailPage() {
   });
 
   useEffect(() => {
+    let active = true;
     if (product?.media_url) {
-      let active = true;
       fetchSignedUrl({ data: { path: product.media_url } }).then(url => {
         if (active) setSignedUrl(url);
       });
-      return () => { active = false; };
     }
+    return () => { active = false; };
   }, [product?.media_url, fetchSignedUrl]);
 
   const handleSendToEditor = useCallback(() => {
