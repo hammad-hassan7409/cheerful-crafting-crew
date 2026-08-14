@@ -125,9 +125,8 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
       {/* Video Area */}
       <div 
         className="relative w-full aspect-video bg-black flex items-center justify-center overflow-hidden cursor-pointer"
-        onMouseDown={(e) => {
-          // On mobile, tap to play/pause is common, but we need to ensure it doesn't conflict with potential scrolling
-          // Using onMouseDown/onTouchStart instead of onClick can sometimes be more responsive
+        onClick={(e) => {
+          // Toggle play on click, but avoid double firing if control buttons are clicked
           togglePlay();
         }}
       >
@@ -135,9 +134,13 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
           <video
             ref={videoRef}
             key={src}
+            src={src}
             poster={poster}
             className="w-full h-full object-contain pointer-events-none"
-            onPlay={() => setIsPlaying(true)}
+            onPlay={() => {
+              setIsPlaying(true);
+              setIsLoading(false);
+            }}
             onPause={() => setIsPlaying(false)}
             onTimeUpdate={handleTimeUpdate}
             onLoadedMetadata={handleLoadedMetadata}
@@ -148,12 +151,11 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             preload="metadata"
             crossOrigin="anonymous"
           >
-            <source src={src} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         )}
         
-        {isLoading && !error && (
+        {isLoading && !error && !isPlaying && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm z-10 pointer-events-none">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
           </div>
@@ -177,11 +179,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
         {/* Progress Slider */}
         <div 
           className="relative w-full h-2 bg-white/10 rounded-full cursor-pointer group"
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            handleSeek(e);
-          }}
-          onTouchStart={(e) => {
+          onClick={(e) => {
             e.stopPropagation();
             handleSeek(e);
           }}
@@ -201,7 +199,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             <Button
               variant="ghost"
               size="icon"
-              onMouseDown={(e) => {
+              onClick={(e) => {
                 e.stopPropagation();
                 togglePlay();
               }}
@@ -221,7 +219,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                onMouseDown={(e) => {
+                onClick={(e) => {
                   e.stopPropagation();
                   toggleMute();
                 }}
@@ -236,8 +234,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
                 step="0.1"
                 value={isMuted ? 0 : volume}
                 onChange={handleVolumeChange}
-                onMouseDown={(e) => e.stopPropagation()}
-                onTouchStart={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
                 className="w-20 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
               />
             </div>
@@ -245,7 +242,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             <Button
               variant="ghost"
               size="icon"
-              onMouseDown={(e) => {
+              onClick={(e) => {
                 e.stopPropagation();
                 toggleFullscreen();
               }}
