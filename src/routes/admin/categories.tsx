@@ -14,6 +14,8 @@ export const Route = createFileRoute("/admin/categories")({
 
 function CategoriesPage() {
   const [newCategory, setNewCategory] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState("");
   const queryClient = useQueryClient();
 
   const { data: categories, isLoading } = useQuery({
