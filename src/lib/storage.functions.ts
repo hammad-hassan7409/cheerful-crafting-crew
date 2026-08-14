@@ -13,20 +13,25 @@ export const getStorageUsage = createServerFn({ method: "GET" })
     products?.forEach(p => {
       if (p.media_url) {
         try {
+          // Extract the filename from the URL
           const url = new URL(p.media_url);
           const pathParts = url.pathname.split("product-media/");
-            const filePath = pathParts[1];
-            if (filePath) {
-              usedPaths.add(decodeURIComponent(filePath));
-            }
-        } catch (e) {}
+          const filePath = pathParts[pathParts.length - 1];
+          if (filePath) {
+            // Clean up query params and decode
+            const cleanPath = decodeURIComponent(filePath.split('?')[0]!);
+            usedPaths.add(cleanPath);
+          }
+        } catch (e) {
+          console.error("Error parsing media URL for storage usage:", p.media_url, e);
+        }
       }
     });
 
     // 2. List all files in storage
     const { data: files, error } = await supabaseAdmin.storage
       .from("product-media")
-      .list("", { limit: 1000 });
+      .list("", { limit: 5000 }); // Increase limit to be safer
 
     if (error) {
       console.error("Error listing storage files:", error);
@@ -34,11 +39,23 @@ export const getStorageUsage = createServerFn({ method: "GET" })
     }
 
     // 3. Find orphaned files (files in storage but not linked to any product)
-    const orphanedFiles = files?.filter(file => !usedPaths.has(file.name)) || [];
+    // IMPORTANT: Only delete files older than 2 hours to avoid race conditions during upload
+    const now = new Date();
+    const twoHoursAgo = new Date(now.getTime() - (2 * 60 * 60 * 1000));
     
-    // 4. Cleanup: Delete orphaned files to keep storage accurate
+    const orphanedFiles = files?.filter(file => {
+      if (usedPaths.has(file.name)) return false;
+      
+      // Check if file is old enough to be considered truly orphaned
+      const createdDate = file.created_at ? new Date(file.created_at) : null;
+      if (!createdDate) return true; // If no date, assume it's safe to delete if orphaned
+      
+      return createdDate < twoHoursAgo;
+    }) || [];
+    
+    // 4. Cleanup: Delete truly orphaned files
     if (orphanedFiles.length > 0) {
-      console.log(`Cleaning up ${orphanedFiles.length} orphaned storage files`);
+      console.log(`Cleaning up ${orphanedFiles.length} truly orphaned storage files`);
       await supabaseAdmin.storage
         .from("product-media")
         .remove(orphanedFiles.map(f => f.name));
