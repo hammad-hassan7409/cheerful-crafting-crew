@@ -268,11 +268,11 @@ function Index() {
     },
   });
 
-  const handleSendToEditor = (productName: string) => {
+  const handleSendToEditor = useCallback((productName: string) => {
     const phoneNumber = settings?.["whatsapp_number"] || "923021937758";
-    const message = encodeURIComponent(productName);
+    const message = encodeURIComponent(`Hi, I am interested in "${productName}". Can you provide more details?`);
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
-  };
+  }, [settings]);
 
   if (categoriesLoading || productsLoading) {
     return (
@@ -397,11 +397,11 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
     return () => { active = false; };
   }, [product.media_url, fetchSignedUrl]);
 
-  const handleSendToEditor = (productName: string) => {
+  const handleSendToEditor = useCallback((productName: string) => {
     const phoneNumber = whatsappNumber || "923021937758";
-    const message = encodeURIComponent(productName);
+    const message = encodeURIComponent(`Hi, I am interested in "${productName}". Can you provide more details?`);
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
-  };
+  }, [whatsappNumber]);
 
   return (
     <div
