@@ -157,13 +157,14 @@ function ProductFormPage() {
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      // Upload with explicit content type to ensure browser plays it correctly
+      // Upload with optimized settings
       const { data: uploadData, error: uploadErr } = await supabase.storage
         .from("product-media")
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false,
-          contentType: file.type // CRITICAL: Ensure MIME type is preserved
+          contentType: file.type, // CRITICAL: Ensure MIME type is preserved
+          duplex: 'half', // Recommended for streaming uploads if supported by the environment
         });
 
       if (uploadErr) {
