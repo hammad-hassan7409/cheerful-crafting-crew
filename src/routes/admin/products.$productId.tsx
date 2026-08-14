@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { useServerFn } from "@tanstack/react-start";
 import { getSignedUrl } from "@/lib/media.functions";
 import { useSignedUrl } from "@/hooks/use-signed-url";
+import { VideoPlayer } from "@/components/VideoPlayer";
 import { getStorageUsage } from "@/lib/storage.functions";
 import { productSchema, type ProductFormValues, getCategories, getProduct } from "@/lib/products-admin.functions";
 
