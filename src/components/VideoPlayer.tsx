@@ -199,11 +199,11 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             <Button
               variant="ghost"
               size="icon"
-              onClick={(e) => {
+              onMouseDown={(e) => {
                 e.stopPropagation();
                 togglePlay();
               }}
-              className="text-white hover:bg-white/10 rounded-xl"
+              className="text-white hover:bg-white/10 rounded-xl touch-manipulation"
               disabled={!!error}
             >
               {isPlaying ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current" />}
