@@ -2,10 +2,11 @@ import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Trash2, X, Loader2, Play, ImageIcon, HardDrive } from "lucide-react";
+import { Trash2, X, Loader2, Play, ImageIcon, HardDrive, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 import { useServerFn } from "@tanstack/react-start";
@@ -13,7 +14,8 @@ import { getSignedUrl } from "@/lib/media.functions";
 import { getStorageUsage } from "@/lib/storage.functions";
 
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
+import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
@@ -24,6 +26,11 @@ const productSchema = z.object({
   media_type: z.enum(["video", "image"]),
   original_price: z.number().min(0),
   discounted_price: z.number().min(0),
+  description: z.string().refine((val) => {
+    if (!val) return true;
+    const words = val.trim().split(/\s+/).filter(word => word.length > 0);
+    return words.length <= 500;
+  }, "Maximum description length is 500 words"),
 });
 
 type ProductFormValues = {
@@ -33,6 +40,7 @@ type ProductFormValues = {
   media_type: "video" | "image";
   original_price: number;
   discounted_price: number;
+  description: string;
 };
 
 export const Route = createFileRoute("/admin/products/$productId")({
@@ -87,6 +95,7 @@ function ProductFormPage() {
       media_type: "image",
       original_price: 0,
       discounted_price: 0,
+      description: "",
     },
   });
 
@@ -99,6 +108,7 @@ function ProductFormPage() {
         media_type: product.media_type as "video" | "image",
         original_price: Number(product.original_price),
         discounted_price: Number(product.discounted_price),
+        description: product.description || "",
       });
     }
   }, [product, form]);
@@ -125,15 +135,19 @@ function ProductFormPage() {
   const mutation = useMutation({
     mutationFn: async (values: ProductFormValues) => {
       console.log("Saving product values:", values);
+      const payload = {
+        ...values,
+        description: values.description || ""
+      };
       if (isNew) {
-        const { data, error } = await supabase.from("products").insert([values]).select();
+        const { data, error } = await supabase.from("products").insert([payload]).select();
         if (error) {
           console.error("Insert error:", error);
           throw error;
         }
         return data;
       } else {
-        const { data, error } = await supabase.from("products").update(values).eq("id", productId).select();
+        const { data, error } = await supabase.from("products").update(payload).eq("id", productId).select();
         if (error) {
           console.error("Update error:", error);
           throw error;
@@ -413,6 +427,29 @@ function ProductFormPage() {
           <Input type="hidden" {...form.register("media_url")} />
           {form.formState.errors.media_url && (
             <p className="text-sm text-destructive">{form.formState.errors.media_url.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="description">Product Description</Label>
+          <Textarea 
+            id="description" 
+            {...form.register("description")} 
+            className="min-h-[150px]"
+            placeholder="Enter product description (max 500 words)..."
+          />
+          <div className="flex justify-between items-center text-xs text-muted-foreground">
+            <p>Maximum 500 words</p>
+            <p className={cn(
+              (form.watch("description")?.trim().split(/\s+/).filter(w => w.length > 0).length || 0) > 500 
+              ? "text-destructive font-bold" 
+              : ""
+            )}>
+              Words: {form.watch("description")?.trim().split(/\s+/).filter(w => w.length > 0).length || 0} / 500
+            </p>
+          </div>
+          {form.formState.errors.description && (
+            <p className="text-sm text-destructive">{form.formState.errors.description.message}</p>
           )}
         </div>
 
