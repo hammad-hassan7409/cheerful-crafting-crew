@@ -177,6 +177,8 @@ const VideoPreview = memo(function VideoPreview({ mediaUrl }: { mediaUrl: string
           controlsList="nodownload"
           onCanPlay={() => {
             setIsLoading(false);
+          onCanPlay={() => {
+            setIsLoading(false);
           }}
           onLoadedData={() => {
             setIsLoading(false);

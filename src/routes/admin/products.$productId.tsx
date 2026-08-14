@@ -112,14 +112,10 @@ function ProductFormPage() {
     }
   }, [product, form]);
 
-  useEffect(() => {
-    const mediaUrl = form.watch("media_url");
-    if (mediaUrl && !mediaUrl.startsWith("blob:")) {
-      fetchSignedUrl({ data: { path: mediaUrl } }).then(url => setSignedUrl(url));
-    } else {
-      setSignedUrl(null);
-    }
-  }, [form.watch("media_url"), fetchSignedUrl]);
+  const watchMediaUrl = form.watch("media_url");
+  const { url: signedUrl } = useSignedUrl(
+    watchMediaUrl && !watchMediaUrl.startsWith("blob:") ? watchMediaUrl : null
+  );
 
 
   // Clean up object URL when component unmounts or preview changes
