@@ -394,7 +394,7 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
   }, [product.media_url, fetchSignedUrl]);
 
   const handleSendToEditor = (productName: string) => {
-    const phoneNumber = settings?.["whatsapp_number"] || "923021937758";
+    const phoneNumber = whatsappNumber || "923021937758";
     const message = encodeURIComponent(productName);
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
   };
