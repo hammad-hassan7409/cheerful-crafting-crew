@@ -205,7 +205,10 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={toggleMute}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleMute();
+                }}
                 className="text-white hover:bg-white/10 rounded-xl"
               >
                 {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
