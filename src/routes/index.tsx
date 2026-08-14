@@ -335,11 +335,17 @@ function Index() {
 
               <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
                 {categoryProducts.map((product: any) => (
-                  <ProductCard 
+                  <Link 
                     key={product.id} 
-                    product={product} 
-                    whatsappNumber={settings?.["whatsapp_number"]}
-                  />
+                    to="/products/$productId" 
+                    params={{ productId: product.id }}
+                    className="block outline-none"
+                  >
+                    <ProductCard 
+                      product={product} 
+                      whatsappNumber={settings?.["whatsapp_number"]}
+                    />
+                  </Link>
                 ))}
 
               </div>
@@ -470,7 +476,11 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
 
         <Button
           className="w-full mt-6 h-12 bg-primary hover:bg-primary/80 text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all hover:shadow-primary/40 flex items-center justify-center gap-2"
-          onClick={() => handleSendToEditor(product.name)}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleSendToEditor(product.name);
+          }}
         >
           Send to Editor
           <MessageSquare className="h-4 w-4" />
