@@ -25,12 +25,22 @@ export const Route = createFileRoute("/products/$productId")({
 function ProtectedMedia({ 
   children, 
   type = "video",
-  scale = 1
+  scale = 1,
+  onScaleChange,
+  isZoomEnabled = false
 }: { 
   children: ReactNode; 
   type?: "video" | "image";
   scale?: number;
+  onScaleChange?: (scale: number) => void;
+  isZoomEnabled?: boolean;
 }) {
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+  const containerRef = useState<HTMLDivElement | null>(null)[0];
+  const [internalRef, setInternalRef] = useState<HTMLDivElement | null>(null);
+
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     toast.error("Downloads are disabled to protect AR EDITZ samples.", {
@@ -38,15 +48,89 @@ function ProtectedMedia({
     });
   }, []);
 
+  // Pinch to zoom logic
+  useEffect(() => {
+    if (!internalRef || type !== "image" || !isZoomEnabled) return;
+
+    let initialDist = 0;
+    let initialScale = scale;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        initialDist = Math.hypot(
+          e.touches[0].pageX - e.touches[1].pageX,
+          e.touches[0].pageY - e.touches[1].pageY
+        );
+        initialScale = scale;
+      } else if (e.touches.length === 1 && scale > 1) {
+        setIsDragging(true);
+        setStartPos({
+          x: e.touches[0].pageX - offset.x,
+          y: e.touches[0].pageY - offset.y
+        });
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && initialDist > 0) {
+        e.preventDefault();
+        const dist = Math.hypot(
+          e.touches[0].pageX - e.touches[1].pageX,
+          e.touches[0].pageY - e.touches[1].pageY
+        );
+        const newScale = Math.min(Math.max(1, (dist / initialDist) * initialScale), 3);
+        onScaleChange?.(newScale);
+      } else if (e.touches.length === 1 && isDragging && scale > 1) {
+        e.preventDefault();
+        const newX = e.touches[0].pageX - startPos.x;
+        const newY = e.touches[0].pageY - startPos.y;
+        
+        // Bounds checking
+        const limitX = (scale - 1) * (internalRef.clientWidth / 2);
+        const limitY = (scale - 1) * (internalRef.clientHeight / 2);
+        
+        setOffset({
+          x: Math.min(Math.max(newX, -limitX), limitX),
+          y: Math.min(Math.max(newY, -limitY), limitY)
+        });
+      }
+    };
+
+    const handleTouchEnd = () => {
+      initialDist = 0;
+      setIsDragging(false);
+    };
+
+    internalRef.addEventListener("touchstart", handleTouchStart, { passive: false });
+    internalRef.addEventListener("touchmove", handleTouchMove, { passive: false });
+    internalRef.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      internalRef.removeEventListener("touchstart", handleTouchStart);
+      internalRef.removeEventListener("touchmove", handleTouchMove);
+      internalRef.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [internalRef, type, scale, onScaleChange, isZoomEnabled, isDragging, startPos, offset]);
+
+  // Reset offset when scale returns to 1
+  useEffect(() => {
+    if (scale === 1) {
+      setOffset({ x: 0, y: 0 });
+    }
+  }, [scale]);
+
   return (
     <div 
-      className="relative h-full w-full select-none overflow-hidden"
+      ref={setInternalRef}
+      className="relative h-full w-full select-none overflow-hidden touch-none"
       onContextMenu={handleContextMenu}
       onDragStart={(e) => e.preventDefault()}
     >
       <div 
         className="w-full h-full transition-transform duration-200 ease-out flex items-center justify-center"
-        style={{ transform: `scale(${scale})` }}
+        style={{ 
+          transform: `scale(${scale}) translate(${offset.x / scale}px, ${offset.y / scale}px)` 
+        }}
       >
         {type === "image" && <div className="absolute inset-0 z-10 bg-transparent cursor-default" />}
         {children}
