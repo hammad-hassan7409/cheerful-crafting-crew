@@ -234,6 +234,7 @@ function ProductFormPage() {
     } catch (error: any) {
       console.error("Error removing media:", error);
       form.setValue("media_url", "", { shouldValidate: true });
+
     }
   };
 
