@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogIn, Play, Image as ImageIcon, ExternalLink, ChevronRight, Loader2, ShieldAlert, MessageSquare, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import { LogIn, Image as ImageIcon, ExternalLink, ChevronRight, Loader2, ShieldAlert, MessageSquare, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useState, useEffect, useCallback, type ReactNode, memo } from "react";
 import { toast } from "sonner";
