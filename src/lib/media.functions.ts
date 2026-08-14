@@ -47,10 +47,10 @@ export const getSignedUrl = createServerFn({ method: "GET" })
     // Use service role client to ensure we can always generate signed URLs for legitimate media
     const { data: signedData, error } = await supabaseAdmin.storage
       .from("product-media")
-      .createSignedUrl(decodeURIComponent(filePath), 3600); // 1 hour
+      .createSignedUrl(decodedPath, 3600); // 1 hour
 
     if (error || !signedData?.signedUrl) {
-      console.error("Error generating signed URL for path:", filePath, error);
+      console.error("[MediaFn] Error generating signed URL for path:", decodedPath, error);
       
       // Fallback: If signing fails but the bucket is public, we might be able to use the public URL
       // However, we strictly follow the signed URL requirement for protection.
