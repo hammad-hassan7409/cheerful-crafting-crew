@@ -21,6 +21,12 @@ export function useSignedUrl(path: string | null | undefined) {
       return;
     }
 
+    // If it's already a public URL that seems to work, just use it
+    if (path.includes('/storage/v1/object/public/')) {
+      setUrl(path);
+      return;
+    }
+
     // Check cache
     const cached = urlCache[path];
     if (cached && cached.expires > Date.now()) {
