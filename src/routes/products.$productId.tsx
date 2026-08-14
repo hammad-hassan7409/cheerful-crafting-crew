@@ -56,13 +56,13 @@ function ProtectedMedia({
     let initialScale = scale;
 
     const handleTouchStart = (e: TouchEvent) => {
-      if (e.touches.length === 2) {
+      if (e.touches.length === 2 && e.touches[0] && e.touches[1]) {
         initialDist = Math.hypot(
           e.touches[0].pageX - e.touches[1].pageX,
           e.touches[0].pageY - e.touches[1].pageY
         );
         initialScale = scale;
-      } else if (e.touches.length === 1 && scale > 1) {
+      } else if (e.touches.length === 1 && scale > 1 && e.touches[0]) {
         setIsDragging(true);
         setStartPos({
           x: e.touches[0].pageX - offset.x,
@@ -72,7 +72,7 @@ function ProtectedMedia({
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length === 2 && initialDist > 0) {
+      if (e.touches.length === 2 && initialDist > 0 && e.touches[0] && e.touches[1]) {
         e.preventDefault();
         const dist = Math.hypot(
           e.touches[0].pageX - e.touches[1].pageX,
@@ -80,7 +80,7 @@ function ProtectedMedia({
         );
         const newScale = Math.min(Math.max(1, (dist / initialDist) * initialScale), 3);
         onScaleChange?.(newScale);
-      } else if (e.touches.length === 1 && isDragging && scale > 1) {
+      } else if (e.touches.length === 1 && isDragging && scale > 1 && e.touches[0]) {
         e.preventDefault();
         const newX = e.touches[0].pageX - startPos.x;
         const newY = e.touches[0].pageY - startPos.y;
