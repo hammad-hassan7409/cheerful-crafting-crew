@@ -73,6 +73,7 @@ function ProductFormPage() {
         category_id: product.category_id,
         media_url: product.media_url,
         media_type: "image",
+
         original_price: Number(product.original_price),
         discounted_price: Number(product.discounted_price),
         description: product.description || "",
