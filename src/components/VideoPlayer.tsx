@@ -45,11 +45,19 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
     setIsLoading(false);
   };
 
-  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     if (!videoRef.current) return;
     const rect = e.currentTarget.getBoundingClientRect();
-    const pos = (e.clientX - rect.left) / rect.width;
-    videoRef.current.currentTime = pos * videoRef.current.duration;
+    let clientX: number;
+    
+    if ('clientX' in e) {
+      clientX = e.clientX;
+    } else {
+      clientX = e.touches[0]?.clientX || 0;
+    }
+    
+    const pos = (clientX - rect.left) / rect.width;
+    videoRef.current.currentTime = Math.max(0, Math.min(pos * videoRef.current.duration, videoRef.current.duration));
   };
 
   const toggleMute = () => {
@@ -171,17 +179,11 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
           className="relative w-full h-2 bg-white/10 rounded-full cursor-pointer group"
           onMouseDown={(e) => {
             e.stopPropagation();
-            handleSeek(e as unknown as React.MouseEvent<HTMLDivElement>);
+            handleSeek(e);
           }}
           onTouchStart={(e) => {
             e.stopPropagation();
-            const touch = e.touches[0];
-            if (!touch) return;
-            const rect = e.currentTarget.getBoundingClientRect();
-            const pos = (touch.clientX - rect.left) / rect.width;
-            if (videoRef.current) {
-              videoRef.current.currentTime = Math.max(0, Math.min(pos * videoRef.current.duration, videoRef.current.duration));
-            }
+            handleSeek(e);
           }}
         >
           <div 
