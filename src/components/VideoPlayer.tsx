@@ -133,7 +133,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             key={src}
             src={src}
             poster={poster}
-            className="w-full h-full object-contain pointer-events-none"
+            className="w-full h-full object-contain pointer-events-none bg-zinc-900"
             onPlay={() => {
               setIsPlaying(true);
               setIsLoading(false);
