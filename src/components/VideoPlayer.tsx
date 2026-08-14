@@ -185,7 +185,10 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             <Button
               variant="ghost"
               size="icon"
-              onClick={togglePlay}
+              onClick={(e) => {
+                e.stopPropagation();
+                togglePlay();
+              }}
               className="text-white hover:bg-white/10 rounded-xl"
               disabled={!!error}
             >
