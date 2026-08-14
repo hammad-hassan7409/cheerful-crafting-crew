@@ -310,6 +310,7 @@ function ProductFormPage() {
                     controls
                     autoPlay
                     muted
+                    preload="auto"
                     key={displayUrl} // Force reload when URL changes
                   />
                 ) : (
