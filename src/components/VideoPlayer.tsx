@@ -131,8 +131,6 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
           <video
             ref={videoRef}
             key={src}
-            src={src}
-            poster={poster}
             className="w-full h-full object-contain pointer-events-none bg-zinc-900"
             onPlay={() => {
               setIsPlaying(true);
@@ -148,6 +146,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             preload="auto"
             crossOrigin="anonymous"
           >
+            <source src={src} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         )}
