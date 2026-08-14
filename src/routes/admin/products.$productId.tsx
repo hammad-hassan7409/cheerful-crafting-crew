@@ -1,8 +1,10 @@
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Trash2, X, Loader2, Play, ImageIcon, HardDrive, FileText } from "lucide-react";
+import { Trash2, X, Loader2, ImageIcon, HardDrive, FileText } from "lucide-react";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -60,6 +62,7 @@ function ProductFormPage() {
     defaultValues: {
       name: "",
       media_type: "image",
+
       original_price: 0,
       discounted_price: 0,
       description: "",
@@ -72,7 +75,9 @@ function ProductFormPage() {
         name: product.name,
         category_id: product.category_id,
         media_url: product.media_url,
-        media_type: product.media_type as "video" | "image",
+        media_type: "image",
+
+
         original_price: Number(product.original_price),
         discounted_price: Number(product.discounted_price),
         description: product.description || "",
@@ -138,7 +143,8 @@ function ProductFormPage() {
     setPendingFile(file);
 
     // Update form type immediately
-    form.setValue("media_type", file.type.startsWith("video") ? "video" : "image", { shouldValidate: true });
+    form.setValue("media_type", "image", { shouldValidate: true });
+
 
     // Create local preview immediately
     const previewUrl = URL.createObjectURL(file);
@@ -168,6 +174,7 @@ function ProductFormPage() {
         .getPublicUrl(filePath);
 
       form.setValue("media_url", publicUrl, { shouldValidate: true });
+
       setPendingFile(null);
       toast.success("File uploaded successfully to storage");
     } catch (error: any) {
@@ -184,11 +191,19 @@ function ProductFormPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     
+    // Check if image
+    if (!file.type.startsWith("image/")) {
+      toast.error("Only images are allowed.");
+      e.target.value = "";
+      return;
+    }
+    
     // Reset the file input
     e.target.value = "";
     
     await performUpload(file);
   };
+
 
   const removeMedia = async () => {
     const mediaUrl = form.getValues("media_url") || "";
@@ -200,6 +215,7 @@ function ProductFormPage() {
 
     if (!mediaUrl) {
       form.setValue("media_url", "", { shouldValidate: true });
+
       return;
     }
 
@@ -214,18 +230,20 @@ function ProductFormPage() {
       }
       
       form.setValue("media_url", "", { shouldValidate: true });
+
       queryClient.invalidateQueries({ queryKey: ["storage-usage"] });
       toast.success("Media removed");
     } catch (error: any) {
       console.error("Error removing media:", error);
       form.setValue("media_url", "", { shouldValidate: true });
+
     }
   };
 
   if (productLoading) return <div>Loading...</div>;
 
   const currentMediaUrl = form.watch("media_url");
-  const currentMediaType = form.watch("media_type");
+  const currentMediaType = "image";
   const displayUrl = localPreview || signedUrl;
 
 
@@ -235,7 +253,7 @@ function ProductFormPage() {
         <h1 className="text-3xl font-bold">{isNew ? "Add Product" : "Edit Product"}</h1>
       </div>
 
-      <form onSubmit={form.handleSubmit((v) => mutation.mutate(v as any))} className="space-y-6">
+      <form onSubmit={form.handleSubmit((v) => mutation.mutate(v))} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="name">Product Name</Label>
           <Input id="name" {...form.register("name")} />
@@ -264,29 +282,18 @@ function ProductFormPage() {
         </div>
 
         <div className="space-y-4">
-          <Label>Media File (Image or Video)</Label>
+          <Label>Media File (Image)</Label>
           
           {displayUrl ? (
             <div className="space-y-4">
               <div className="relative group rounded-lg overflow-hidden border border-zinc-200 aspect-video bg-black flex items-center justify-center">
-                {currentMediaType === "video" ? (
-                  <video 
-                    src={displayUrl} 
-                    className="max-w-full max-h-full"
-                    controls
-                    autoPlay
-                    muted
-                    preload="auto"
-                    key={displayUrl}
-                  />
-                ) : (
-                  <img 
-                    src={displayUrl} 
-                    alt="Product preview" 
-                    className="max-w-full max-h-full object-contain"
-                    key={displayUrl}
-                  />
-                )}
+                <img 
+                  src={displayUrl} 
+                  alt="Product preview" 
+                  className="max-w-full max-h-full object-contain"
+                  key={displayUrl}
+                />
+
                 
                 {!uploading && (
                   <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -364,13 +371,13 @@ function ProductFormPage() {
                     <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
                   </svg>
                   <p className="mb-2 text-sm text-zinc-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                  <p className="text-xs text-zinc-500">Video or Image (MAX. 400MB)</p>
+                  <p className="text-xs text-zinc-500">Image (MAX. 400MB)</p>
                 </div>
                   <input 
                     type="file" 
                     className="hidden" 
                     onChange={handleFileUpload} 
-                    accept="image/*,video/*" 
+                    accept="image/*" 
                     disabled={uploading}
                   />
                 </label>
@@ -379,6 +386,7 @@ function ProductFormPage() {
           )}
           
           <Input type="hidden" {...form.register("media_url")} />
+
           {form.formState.errors.media_url && (
             <p className="text-sm text-destructive">{form.formState.errors.media_url.message}</p>
           )}

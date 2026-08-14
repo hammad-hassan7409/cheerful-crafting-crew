@@ -7,8 +7,8 @@ import {
   MessageSquare, 
   ShieldAlert, 
   ArrowLeft, 
-  Play, 
   Image as ImageIcon,
+
   ZoomIn,
   ZoomOut,
   RotateCcw
@@ -23,13 +23,11 @@ export const Route = createFileRoute("/products/$productId")({
 
 function ProtectedMedia({ 
   children, 
-  type = "video",
   scale = 1,
   onScaleChange,
   isZoomEnabled = false
 }: { 
   children: ReactNode; 
-  type?: "video" | "image";
   scale?: number;
   onScaleChange?: (scale: number) => void;
   isZoomEnabled?: boolean;
@@ -37,7 +35,6 @@ function ProtectedMedia({
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
-  const containerRef = useState<HTMLDivElement | null>(null)[0];
   const [internalRef, setInternalRef] = useState<HTMLDivElement | null>(null);
 
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
@@ -49,7 +46,7 @@ function ProtectedMedia({
 
   // Pinch to zoom logic
   useEffect(() => {
-    if (!internalRef || type !== "image" || !isZoomEnabled) return;
+    if (!internalRef || !isZoomEnabled) return;
 
     let initialDist = 0;
     let initialScale = scale;
@@ -109,7 +106,7 @@ function ProtectedMedia({
       internalRef.removeEventListener("touchmove", handleTouchMove);
       internalRef.removeEventListener("touchend", handleTouchEnd);
     };
-  }, [internalRef, type, scale, onScaleChange, isZoomEnabled, isDragging, startPos, offset]);
+  }, [internalRef, scale, onScaleChange, isZoomEnabled, isDragging, startPos, offset]);
 
   // Reset offset when scale returns to 1
   useEffect(() => {
@@ -131,12 +128,13 @@ function ProtectedMedia({
           transform: `scale(${scale}) translate(${offset.x / scale}px, ${offset.y / scale}px)` 
         }}
       >
-        {type === "image" && <div className="absolute inset-0 z-10 bg-transparent cursor-default" />}
+        <div className="absolute inset-0 z-10 bg-transparent cursor-default" />
         {children}
       </div>
     </div>
   );
 }
+
 
 function ProductDetailPage() {
   const { productId } = useParams({ from: "/products/$productId" });
@@ -229,35 +227,16 @@ function ProductDetailPage() {
           <div className="space-y-4">
             <div className="w-full bg-muted rounded-3xl overflow-hidden border border-border/40 relative shadow-2xl group/media min-h-[300px] flex items-center justify-center">
               <ProtectedMedia 
-                type={product.media_type as "video" | "image"} 
-                scale={product.media_type === "image" ? zoom : 1}
+                scale={zoom}
                 onScaleChange={setZoom}
-                isZoomEnabled={product.media_type === "image"}
+                isZoomEnabled={true}
               >
                 {signedUrl ? (
-                  product.media_type === "video" ? (
-                    <video
-                      key={signedUrl}
-                      src={signedUrl}
-                      className="max-w-full max-h-[70vh] w-auto h-auto block"
-                      controls
-                      autoPlay
-                      muted
-                      playsInline
-                      controlsList="nodownload"
-                      preload="auto"
-                      onCanPlay={() => console.log("Product detail video can play")}
-                      onError={(e) => console.error("Product detail video error:", e)}
-                    >
-                      <source src={signedUrl} type="video/mp4" />
-                    </video>
-                  ) : (
-                    <img
-                      src={signedUrl}
-                      alt={product.name}
-                      className="max-w-full max-h-[70vh] w-auto h-auto block object-contain"
-                    />
-                  )
+                  <img
+                    src={signedUrl}
+                    alt={product.name}
+                    className="max-w-full max-h-[70vh] w-auto h-auto block object-contain"
+                  />
                 ) : (
                   <div className="flex items-center justify-center h-64 w-full">
                     <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
@@ -265,8 +244,10 @@ function ProductDetailPage() {
                 )}
               </ProtectedMedia>
 
+
               {/* Zoom Controls */}
-              {product.media_type === "image" && signedUrl && (
+              {signedUrl && (
+
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 p-2 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 opacity-0 group-hover/media:opacity-100 transition-opacity duration-300 z-20">
                   <Button
                     variant="ghost"
@@ -305,8 +286,9 @@ function ProductDetailPage() {
             
             <div className="flex items-center gap-2 px-2">
               <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest border border-primary/20">
-                {product.media_type === "video" ? "Video Production" : "Graphic Design"}
+                Graphic Design
               </span>
+
               <span className="px-3 py-1 rounded-full bg-white/5 text-muted-foreground text-[10px] font-bold uppercase tracking-widest border border-white/10">
                 Premium Sample
               </span>
