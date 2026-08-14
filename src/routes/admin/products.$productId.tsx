@@ -213,6 +213,7 @@ function ProductFormPage() {
 
     if (!mediaUrl) {
       form.setValue("media_url", "", { shouldValidate: true });
+
       return;
     }
 
