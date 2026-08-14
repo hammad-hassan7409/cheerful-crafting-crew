@@ -176,11 +176,11 @@ function ImageZoomDialog({ signedUrl, productName }: { signedUrl: string | null;
   return (
     <div className="relative w-full h-full flex items-center justify-center">
       <ProtectedMedia 
-        type="image" 
         scale={zoom} 
         onScaleChange={setZoom}
         isZoomEnabled={true}
       >
+
         {signedUrl && (
           <img 
             src={signedUrl} 
@@ -430,35 +430,31 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
       className="group relative flex flex-col rounded-2xl border border-border/50 bg-card/50 transition-all hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 overflow-hidden"
     >
       <div className="relative w-full overflow-hidden bg-muted flex items-center justify-center min-h-[200px]">
-        {product.media_type === "video" ? (
-          <VideoPreview mediaUrl={product.media_url} />
-        ) : (
-          <Dialog>
-            <DialogTrigger asChild>
-              <button className="h-full w-full cursor-zoom-in relative group/image">
-                <ProtectedMedia type="image">
-                  {signedUrl && (
-                    <img
-                      src={signedUrl}
-                      alt={product.name}
-                      className="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-700 group-hover:scale-110"
-                    />
-                  )}
-                </ProtectedMedia>
-                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
-                  <ImageIcon className="h-8 w-8 text-white drop-shadow-lg" />
-                </div>
-              </button>
-            </DialogTrigger>
-            <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 overflow-hidden bg-black/90 border-white/10 flex items-center justify-center">
-              <ImageZoomDialog signedUrl={signedUrl} productName={product.name} />
-            </DialogContent>
-          </Dialog>
-        )}
+        <Dialog>
+          <DialogTrigger asChild>
+            <button className="h-full w-full cursor-zoom-in relative group/image">
+              <ProtectedMedia>
+                {signedUrl && (
+                  <img
+                    src={signedUrl}
+                    alt={product.name}
+                    className="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-700 group-hover:scale-110"
+                  />
+                )}
+              </ProtectedMedia>
+              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
+                <ImageIcon className="h-8 w-8 text-white drop-shadow-lg" />
+              </div>
+            </button>
+          </DialogTrigger>
+          <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 overflow-hidden bg-black/90 border-white/10 flex items-center justify-center">
+            <ImageZoomDialog signedUrl={signedUrl} productName={product.name} />
+          </DialogContent>
+        </Dialog>
         
         <div className="absolute top-4 right-4 z-20">
           <span className="px-3 py-1 rounded-full bg-background/80 backdrop-blur-md text-[10px] font-bold uppercase tracking-widest border border-white/10">
-            {product.media_type === "video" ? "Video Edit" : "Design"}
+            Design
           </span>
         </div>
       </div>
@@ -476,10 +472,6 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
               RS. {product.original_price}
             </span>
           </div>
-          
-          {product.media_type === "video" ? (
-            <VideoDialog mediaUrl={product.media_url} productName={product.name} />
-          ) : null}
         </div>
 
         <Button
@@ -491,6 +483,7 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
           }}
         >
           Send to Editor
+
           <MessageSquare className="h-4 w-4" />
         </Button>
       </div>
