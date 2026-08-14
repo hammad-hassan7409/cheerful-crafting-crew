@@ -149,7 +149,6 @@ function ProductFormPage() {
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `${fileName}`;
 
-
       const { data: uploadData, error: uploadErr } = await supabase.storage
         .from("product-media")
         .upload(filePath, file, {
@@ -158,7 +157,6 @@ function ProductFormPage() {
         });
 
       if (uploadErr) {
-        // Technical cause identified: If bucket doesn't exist or RLS fails
         throw uploadErr;
       }
 
