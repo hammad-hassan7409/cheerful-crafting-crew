@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { getSignedUrl } from "./media.functions";
+import { getSignedUrl } from "@/lib/media.functions";
 
 // Simple in-memory cache for signed URLs
 const urlCache: Record<string, { url: string; expires: number }> = {};
@@ -32,7 +32,7 @@ export function useSignedUrl(path: string | null | undefined) {
     setIsLoading(true);
 
     fetchSignedUrl({ data: { path } })
-      .then((signedUrl) => {
+      .then((signedUrl: string | null) => {
         if (!active) return;
         
         if (signedUrl) {
