@@ -26,7 +26,7 @@ const productSchema = z.object({
   media_type: z.enum(["video", "image"]),
   original_price: z.number().min(0),
   discounted_price: z.number().min(0),
-  description: z.string().default("").refine((val) => {
+  description: z.string().refine((val) => {
     if (!val) return true;
     const words = val.trim().split(/\s+/).filter(word => word.length > 0);
     return words.length <= 500;
