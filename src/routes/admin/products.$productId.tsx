@@ -157,13 +157,11 @@ function ProductFormPage() {
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false,
-          contentType: file.type, // CRITICAL: Ensure MIME type is preserved
-          duplex: 'half', // Recommended for streaming uploads if supported by the environment
+          contentType: file.type, 
+          duplex: 'half',
         });
 
-      if (uploadErr) {
-        throw uploadErr;
-      }
+      if (uploadErr) throw uploadErr;
 
       setUploadProgress(100);
       queryClient.invalidateQueries({ queryKey: ["storage-usage"] });
