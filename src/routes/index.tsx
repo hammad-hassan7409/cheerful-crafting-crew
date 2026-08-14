@@ -175,12 +175,8 @@ const VideoPreview = memo(function VideoPreview({ mediaUrl }: { mediaUrl: string
           loop
           preload="metadata"
           controlsList="nodownload"
-          onCanPlay={() => {
-            setIsLoading(false);
-          }}
-          onLoadedData={() => {
-            setIsLoading(false);
-          }}
+          onCanPlay={() => setIsLoading(false)}
+          onLoadedData={() => setIsLoading(false)}
           onMouseEnter={(e) => !isLoading && e.currentTarget.play()}
           onMouseLeave={(e) => {
             if (!isLoading) {
@@ -243,12 +239,8 @@ function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName:
                 playsInline
                 preload="auto"
                 controlsList="nodownload"
-                onCanPlay={() => {
-                  setIsLoading(false);
-                }}
-                onLoadedData={() => {
-                  setIsLoading(false);
-                }}
+                onCanPlay={() => setIsLoading(false)}
+                onLoadedData={() => setIsLoading(false)}
               />
             )}
           </ProtectedMedia>
