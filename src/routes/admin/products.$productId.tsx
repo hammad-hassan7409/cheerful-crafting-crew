@@ -40,7 +40,7 @@ type ProductFormValues = {
   media_type: "video" | "image";
   original_price: number;
   discounted_price: number;
-  description?: string;
+  description: string;
 };
 
 export const Route = createFileRoute("/admin/products/$productId")({
