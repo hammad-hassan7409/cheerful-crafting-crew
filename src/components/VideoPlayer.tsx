@@ -125,8 +125,9 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             onError={handleError}
             playsInline
             preload="auto"
-            controls
-          />
+          >
+            <source src={src} type="video/mp4" />
+          </video>
         )}
         
         {isLoading && !error && (
