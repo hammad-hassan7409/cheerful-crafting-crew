@@ -4,72 +4,60 @@ export const getStorageUsage = createServerFn({ method: "GET" })
   .handler(async () => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     
-    // 1. Get all products to find which media files are actually in use
-    const { data: products } = await supabaseAdmin
-      .from("products")
-      .select("media_url");
-    
-    const usedPaths = new Set();
-    products?.forEach(p => {
-      if (p.media_url) {
-        try {
-          // Extract the filename from the URL
-          const url = new URL(p.media_url);
-          const pathParts = url.pathname.split("product-media/");
-          const filePath = pathParts[pathParts.length - 1];
-          if (filePath) {
-            // Clean up query params and decode
-            const cleanPath = decodeURIComponent(filePath.split('?')[0]!);
-            usedPaths.add(cleanPath);
-          }
-        } catch (e) {
-          console.error("Error parsing media URL for storage usage:", p.media_url, e);
-        }
-      }
-    });
-
-    // 2. List all files in storage
+    // 1. List all files in storage bucket (the ultimate source of truth)
     const { data: files, error } = await supabaseAdmin.storage
       .from("product-media")
-      .list("", { limit: 5000 }); // Increase limit to be safer
+      .list("", { limit: 10000 });
 
     if (error) {
       console.error("Error listing storage files:", error);
       return { totalBytes: 0, count: 0, formattedSize: "0 Bytes", remainingBytes: 0, remainingFormatted: "256 GB" };
     }
 
-    // 3. Find orphaned files (files in storage but not linked to any product)
-    // IMPORTANT: Only delete files older than 2 hours to avoid race conditions during upload
-    const now = new Date();
-    const twoHoursAgo = new Date(now.getTime() - (2 * 60 * 60 * 1000));
-    
-    const orphanedFiles = files?.filter(file => {
-      if (usedPaths.has(file.name)) return false;
-      
-      // Check if file is old enough to be considered truly orphaned
-      const createdDate = file.created_at ? new Date(file.created_at) : null;
-      if (!createdDate) return true; // If no date, assume it's safe to delete if orphaned
-      
-      return createdDate < twoHoursAgo;
-    }) || [];
-    
-    // 4. Cleanup: Delete truly orphaned files
-    if (orphanedFiles.length > 0) {
-      console.log(`Cleaning up ${orphanedFiles.length} truly orphaned storage files`);
-      await supabaseAdmin.storage
-        .from("product-media")
-        .remove(orphanedFiles.map(f => f.name));
-    }
-
-    // 5. Recalculate based on active files only
-    const activeFiles = files?.filter(file => usedPaths.has(file.name)) || [];
-    const totalBytes = activeFiles.reduce((acc, file) => acc + (file.metadata?.size || 0), 0) || 0;
+    // 2. Calculate total usage from the actual files in the bucket
+    const totalBytes = files?.reduce((acc, file) => acc + (file.metadata?.size || 0), 0) || 0;
+    const count = files?.length || 0;
     const limitBytes = 1024 * 1024 * 1024 * 256; // 256GB
     const remainingBytes = Math.max(0, limitBytes - totalBytes);
-    
+
+    // 3. Background cleanup (non-blocking)
+    // We clean up files that aren't in the database AND are older than 2 hours
+    const cleanupOrphaned = async () => {
+      const { data: products } = await supabaseAdmin.from("products").select("media_url");
+      const usedPaths = new Set();
+      products?.forEach(p => {
+        if (p.media_url) {
+          try {
+            const url = new URL(p.media_url);
+            const pathParts = url.pathname.split("product-media/");
+            const filePath = pathParts[pathParts.length - 1];
+            if (filePath) {
+              const cleanPath = decodeURIComponent(filePath.split('?')[0]!);
+              usedPaths.add(cleanPath);
+            }
+          } catch (e) {}
+        }
+      });
+
+      const now = new Date();
+      const twoHoursAgo = new Date(now.getTime() - (2 * 60 * 60 * 1000));
+      const orphanedFiles = files?.filter(file => {
+        if (usedPaths.has(file.name)) return false;
+        const createdDate = file.created_at ? new Date(file.created_at) : null;
+        return !createdDate || createdDate < twoHoursAgo;
+      }) || [];
+
+      if (orphanedFiles.length > 0) {
+        await supabaseAdmin.storage.from("product-media").remove(orphanedFiles.map(f => f.name));
+      }
+    };
+
+    // Trigger cleanup silently in the background
+    cleanupOrphaned().catch(err => console.error("Storage cleanup failed:", err));
+
     return {
       totalBytes,
-      count: activeFiles.length,
+      count,
       formattedSize: formatBytes(totalBytes),
       remainingBytes,
       remainingFormatted: formatBytes(remainingBytes)
