@@ -155,7 +155,7 @@ function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName:
           <DialogTitle>{productName}</DialogTitle>
         </DialogHeader>
         
-        <div className="relative w-full aspect-video bg-black flex items-center justify-center">
+        <div className="relative w-full bg-black flex items-center justify-center min-h-[300px]">
           <ProtectedMedia type="video">
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center z-10">
@@ -169,7 +169,7 @@ function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName:
             {signedUrl && (
               <video
                 src={signedUrl}
-                className={`w-full aspect-video bg-black transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+                className={`max-w-full max-h-[80vh] w-auto h-auto bg-black transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
                 controls
                 autoPlay
                 playsInline
