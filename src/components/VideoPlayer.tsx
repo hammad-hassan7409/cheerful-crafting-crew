@@ -115,13 +115,16 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
       className={cn("flex flex-col w-full bg-black rounded-3xl overflow-hidden border border-white/10 relative", className)}
     >
       {/* Video Area */}
-      <div className="relative w-full aspect-video bg-black flex items-center justify-center overflow-hidden">
+      <div 
+        className="relative w-full aspect-video bg-black flex items-center justify-center overflow-hidden cursor-pointer"
+        onClick={togglePlay}
+      >
         {src && (
           <video
             ref={videoRef}
             key={src}
             poster={poster}
-            className="w-full h-full object-contain"
+            className="w-full h-full object-contain pointer-events-none"
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
             onTimeUpdate={handleTimeUpdate}
@@ -139,13 +142,16 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
         )}
         
         {isLoading && !error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm z-10">
+          <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm z-10 pointer-events-none">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
           </div>
         )}
 
         {error && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900 z-10 p-6 text-center">
+          <div 
+            className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900 z-10 p-6 text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
             <p className="text-destructive font-bold mb-4">{error}</p>
             <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
               <RotateCcw className="mr-2 h-4 w-4" /> Retry
