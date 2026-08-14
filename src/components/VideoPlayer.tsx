@@ -112,7 +112,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
   return (
     <div 
       ref={containerRef}
-      className={cn("flex flex-col w-full bg-black rounded-3xl overflow-hidden border border-white/10", className)}
+      className={cn("flex flex-col w-full bg-black rounded-3xl overflow-hidden border border-white/10 relative", className)}
     >
       {/* Video Area */}
       <div className="relative w-full aspect-video bg-black flex items-center justify-center overflow-hidden">
