@@ -15,8 +15,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useCallback, type ReactNode } from "react";
 import { toast } from "sonner";
-import { getSignedUrl } from "@/lib/media.functions";
-import { useServerFn } from "@tanstack/react-start";
+import { useSignedUrl } from "@/hooks/use-signed-url";
 
 export const Route = createFileRoute("/products/$productId")({
   component: ProductDetailPage,
@@ -141,9 +140,7 @@ function ProtectedMedia({
 
 function ProductDetailPage() {
   const { productId } = useParams({ from: "/products/$productId" });
-  const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
-  const fetchSignedUrl = useServerFn(getSignedUrl);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["product", productId],
@@ -171,15 +168,7 @@ function ProductDetailPage() {
     },
   });
 
-  useEffect(() => {
-    let active = true;
-    if (product?.media_url) {
-      fetchSignedUrl({ data: { path: product.media_url } }).then(url => {
-        if (active) setSignedUrl(url);
-      });
-    }
-    return () => { active = false; };
-  }, [product?.media_url, fetchSignedUrl]);
+  const { url: signedUrl, isLoading: signedUrlLoading } = useSignedUrl(product?.media_url);
 
   const handleSendToEditor = useCallback(() => {
     if (!product) return;
@@ -255,6 +244,7 @@ function ProductDetailPage() {
                       muted
                       playsInline
                       controlsList="nodownload"
+                      preload="auto"
                     />
                   ) : (
                     <img

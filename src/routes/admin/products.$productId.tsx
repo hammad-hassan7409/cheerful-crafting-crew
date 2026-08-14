@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 import { useServerFn } from "@tanstack/react-start";
 import { getSignedUrl } from "@/lib/media.functions";
+import { useSignedUrl } from "@/hooks/use-signed-url";
 import { getStorageUsage } from "@/lib/storage.functions";
 
 import { useState, useEffect } from "react";
@@ -57,8 +58,6 @@ function ProductFormPage() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [localPreview, setLocalPreview] = useState<string | null>(null);
-  const [signedUrl, setSignedUrl] = useState<string | null>(null);
-  const fetchSignedUrl = useServerFn(getSignedUrl);
   const fetchStorage = useServerFn(getStorageUsage);
 
   const { data: storageInfo } = useQuery({
@@ -188,12 +187,6 @@ function ProductFormPage() {
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      const interval = setInterval(() => {
-        setUploadProgress((prev) => {
-          if (prev >= 95) return prev;
-          return prev + 5;
-        });
-      }, 200);
 
       const { data: uploadData, error: uploadErr } = await supabase.storage
         .from("product-media")
@@ -201,8 +194,6 @@ function ProductFormPage() {
           cacheControl: '3600',
           upsert: false
         });
-
-      clearInterval(interval);
 
       if (uploadErr) {
         // Technical cause identified: If bucket doesn't exist or RLS fails
