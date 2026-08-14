@@ -41,11 +41,26 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
     setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100);
   };
 
+  const detectAudioOnly = useCallback(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    // A media file with no video track reports zero intrinsic dimensions.
+    if (el.readyState >= 1 && el.videoWidth === 0 && el.videoHeight === 0) {
+      setIsAudioOnly(true);
+    }
+  }, []);
+
   const handleLoadedMetadata = () => {
     if (!videoRef.current) return;
     setDuration(videoRef.current.duration);
     setIsLoading(false);
+    detectAudioOnly();
   };
+
+  useEffect(() => {
+    setIsAudioOnly(false);
+  }, [src]);
+
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     if (!videoRef.current) return;
