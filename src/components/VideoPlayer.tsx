@@ -75,6 +75,31 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
     }
   };
 
+  const handleError = useCallback(() => {
+    const el = videoRef.current;
+    const mediaError = el?.error ?? null;
+    const codeMap: Record<number, string> = {
+      1: "MEDIA_ERR_ABORTED — loading was aborted",
+      2: "MEDIA_ERR_NETWORK — a network error interrupted the download",
+      3: "MEDIA_ERR_DECODE — the file could not be decoded",
+      4: "MEDIA_ERR_SRC_NOT_SUPPORTED — the source is unsupported or unreachable (expired/invalid URL)",
+    };
+    const detail = mediaError ? (codeMap[mediaError.code] ?? `Unknown code ${mediaError.code}`) : "No MediaError reported";
+
+    console.error("[VideoPlayer] Video load/playback failed", {
+      detail,
+      code: mediaError?.code ?? null,
+      message: mediaError?.message || null,
+      src,
+      networkState: el?.networkState ?? null,
+      readyState: el?.readyState ?? null,
+      currentSrc: el?.currentSrc ?? null,
+    });
+
+    setIsLoading(false);
+    setError("This video couldn't be loaded right now. Please retry.");
+  }, [src]);
+
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
@@ -96,7 +121,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
           onLoadedMetadata={handleLoadedMetadata}
           onWaiting={() => setIsLoading(true)}
           onCanPlay={() => setIsLoading(false)}
-          onError={() => setError("Video failed to load.")}
+          onError={handleError}
           playsInline
           preload="auto"
         />
