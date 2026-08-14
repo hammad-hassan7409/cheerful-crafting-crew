@@ -168,6 +168,7 @@ const VideoPreview = memo(function VideoPreview({ mediaUrl }: { mediaUrl: string
       {signedUrl && (
         <video
           key={signedUrl}
+          src={signedUrl}
           className={cn(
             "max-w-full max-h-full w-auto h-auto object-contain grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500",
             isLoading ? "opacity-0" : "opacity-100"
