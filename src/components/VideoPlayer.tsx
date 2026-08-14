@@ -110,21 +110,26 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
     <div className={cn("flex flex-col w-full bg-black rounded-3xl overflow-hidden border border-white/10", className)}>
       {/* Video Area - NO OVERLAYS */}
       <div className="relative w-full aspect-video bg-black flex items-center justify-center overflow-hidden">
-        <video
-          ref={videoRef}
-          src={src}
-          poster={poster}
-          className="w-full h-full object-contain"
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-          onTimeUpdate={handleTimeUpdate}
-          onLoadedMetadata={handleLoadedMetadata}
-          onWaiting={() => setIsLoading(true)}
-          onCanPlay={() => setIsLoading(false)}
-          onError={handleError}
-          playsInline
-          preload="auto"
-        />
+        {src && (
+          <video
+            ref={videoRef}
+            key={src}
+            poster={poster}
+            className="w-full h-full object-contain"
+            onPlay={() => setIsPlaying(true)}
+            onPause={() => setIsPlaying(false)}
+            onTimeUpdate={handleTimeUpdate}
+            onLoadedMetadata={handleLoadedMetadata}
+            onWaiting={() => setIsLoading(true)}
+            onCanPlay={() => setIsLoading(false)}
+            onError={handleError}
+            playsInline
+            preload="auto"
+          >
+            <source src={src} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        )}
         
         {isLoading && !error && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm z-10">
