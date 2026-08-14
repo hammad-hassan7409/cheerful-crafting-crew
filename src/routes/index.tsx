@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { useState, useEffect, useCallback, type ReactNode, memo } from "react";
 import { toast } from "sonner";
 import { useSignedUrl } from "@/hooks/use-signed-url";
+import { cn } from "@/lib/utils";
 
 import {
   Dialog,
@@ -150,8 +151,6 @@ const VideoPreview = memo(function VideoPreview({ mediaUrl }: { mediaUrl: string
   const [isLoading, setIsLoading] = useState(true);
   const { url: signedUrl } = useSignedUrl(mediaUrl);
 
-  // We only show the loader if we don't have a URL yet
-  // Once we have a URL, the video element handles buffering internally
   const showLoader = !signedUrl || isLoading;
 
   return (
@@ -167,7 +166,10 @@ const VideoPreview = memo(function VideoPreview({ mediaUrl }: { mediaUrl: string
       {signedUrl && (
         <video
           src={signedUrl}
-          className={`max-w-full max-h-full w-auto h-auto object-contain grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+          className={cn(
+            "max-w-full max-h-full w-auto h-auto object-contain grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500",
+            isLoading ? "opacity-0" : "opacity-100"
+          )}
           muted
           playsInline
           loop
@@ -230,7 +232,10 @@ function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName:
             {signedUrl && (
               <video
                 src={signedUrl}
-                className={`max-w-full max-h-[80vh] w-auto h-auto bg-black transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+                className={cn(
+                  "max-w-full max-h-[80vh] w-auto h-auto bg-black transition-opacity duration-500",
+                  isLoading ? "opacity-0" : "opacity-100"
+                )}
                 controls
                 autoPlay
                 playsInline
