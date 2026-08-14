@@ -149,17 +149,19 @@ function ProtectedMedia({
 
 const VideoPreview = memo(function VideoPreview({ mediaUrl }: { mediaUrl: string }) {
   const [isLoading, setIsLoading] = useState(true);
-  const { url: signedUrl } = useSignedUrl(mediaUrl);
+  const { url: signedUrl, isLoading: isSigning } = useSignedUrl(mediaUrl);
 
-  const showLoader = !signedUrl || isLoading;
+  const showLoader = !signedUrl || isLoading || isSigning;
 
   return (
     <ProtectedMedia type="video">
       {showLoader && (
         <div className="absolute inset-0 flex items-center justify-center bg-muted/50 backdrop-blur-sm z-10 transition-opacity duration-300">
-          <div className="flex flex-col items-center gap-3 w-3/4">
+          <div className="flex flex-col items-center gap-3 w-3/4 text-center">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Initializing</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              {!signedUrl && !isSigning ? "Media Unavailable" : "Initializing"}
+            </span>
           </div>
         </div>
       )}
@@ -192,7 +194,10 @@ const VideoPreview = memo(function VideoPreview({ mediaUrl }: { mediaUrl: string
               e.currentTarget.currentTime = 0;
             }
           }}
-        />
+        >
+          <source src={signedUrl} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
       )}
       {!isLoading && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">

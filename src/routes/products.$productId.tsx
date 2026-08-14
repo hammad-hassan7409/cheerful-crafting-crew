@@ -248,7 +248,9 @@ function ProductDetailPage() {
                       preload="auto"
                       onCanPlay={() => console.log("Product detail video can play")}
                       onError={(e) => console.error("Product detail video error:", e)}
-                    />
+                    >
+                      <source src={signedUrl} type="video/mp4" />
+                    </video>
                   ) : (
                     <img
                       src={signedUrl}
