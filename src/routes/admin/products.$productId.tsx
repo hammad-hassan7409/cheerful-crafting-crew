@@ -292,12 +292,13 @@ function ProductFormPage() {
             <div className="space-y-4">
               <div className="relative group rounded-lg overflow-hidden border border-zinc-200 aspect-video bg-black flex items-center justify-center">
                 {currentMediaType === "video" ? (
-                  <video 
-                    src={displayUrl} 
-                    className="max-w-full max-h-full object-contain"
-                    controls={!uploading}
-                    key={displayUrl}
-                  />
+                  <div className="w-full h-full flex items-center justify-center p-4">
+                    <VideoPlayer 
+                      src={displayUrl} 
+                      className="w-full max-w-lg" 
+                      key={displayUrl}
+                    />
+                  </div>
                 ) : (
                   <img 
                     src={displayUrl} 
