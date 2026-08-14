@@ -8,11 +8,12 @@ import {
   ShieldAlert, 
   ArrowLeft, 
   Image as ImageIcon,
-
+  Play,
   ZoomIn,
   ZoomOut,
   RotateCcw
 } from "lucide-react";
+import { VideoPlayer } from "@/components/VideoPlayer";
 import { useState, useEffect, useCallback, type ReactNode } from "react";
 import { toast } from "sonner";
 import { useSignedUrl } from "@/hooks/use-signed-url";
@@ -229,14 +230,18 @@ function ProductDetailPage() {
               <ProtectedMedia 
                 scale={zoom}
                 onScaleChange={setZoom}
-                isZoomEnabled={true}
+                isZoomEnabled={product.media_type === "image"}
               >
                 {signedUrl ? (
-                  <img
-                    src={signedUrl}
-                    alt={product.name}
-                    className="max-w-full max-h-[70vh] w-auto h-auto block object-contain"
-                  />
+                  product.media_type === "video" ? (
+                    <VideoPlayer src={signedUrl} className="w-full" />
+                  ) : (
+                    <img
+                      src={signedUrl}
+                      alt={product.name}
+                      className="max-w-full max-h-[70vh] w-auto h-auto block object-contain"
+                    />
+                  )
                 ) : (
                   <div className="flex items-center justify-center h-64 w-full">
                     <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
@@ -246,7 +251,7 @@ function ProductDetailPage() {
 
 
               {/* Zoom Controls */}
-              {signedUrl && (
+              {signedUrl && product.media_type === "image" && (
 
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 p-2 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 opacity-0 group-hover/media:opacity-100 transition-opacity duration-300 z-20">
                   <Button
@@ -286,7 +291,7 @@ function ProductDetailPage() {
             
             <div className="flex items-center gap-2 px-2">
               <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest border border-primary/20">
-                Graphic Design
+                {product.media_type === "video" ? "Video Editing" : "Graphic Design"}
               </span>
 
               <span className="px-3 py-1 rounded-full bg-white/5 text-muted-foreground text-[10px] font-bold uppercase tracking-widest border border-white/10">
@@ -315,7 +320,7 @@ function ProductDetailPage() {
 
             <div className="bg-card/30 border border-border/40 rounded-3xl p-8 mb-8">
               <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
-                <ImageIcon className="h-4 w-4 text-primary" />
+                {product.media_type === "video" ? <Play className="h-4 w-4 text-primary" /> : <ImageIcon className="h-4 w-4 text-primary" />}
                 Description
               </h3>
               <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap text-lg">

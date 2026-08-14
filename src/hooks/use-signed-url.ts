@@ -4,7 +4,7 @@ import { getSignedUrl } from "@/lib/media.functions";
 
 // Simple in-memory cache for signed URLs
 const urlCache: Record<string, { url: string; expires: number }> = {};
-const CACHE_DURATION = 50 * 60 * 1000; // 50 minutes (signed URLs last 1 hour)
+const CACHE_DURATION = 110 * 60 * 1000; // 110 minutes (signed URLs last 2 hours)
 
 /**
  * Hook to get a signed URL for a private media file with client-side caching

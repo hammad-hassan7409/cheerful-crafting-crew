@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogIn, Image as ImageIcon, ExternalLink, ChevronRight, Loader2, ShieldAlert, MessageSquare, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import { LogIn, Image as ImageIcon, ExternalLink, ChevronRight, Loader2, ShieldAlert, MessageSquare, ZoomIn, ZoomOut, RotateCcw, Play } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useState, useEffect, useCallback, type ReactNode, memo } from "react";
 import { toast } from "sonner";
@@ -412,15 +412,36 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
             <button className="h-full w-full cursor-zoom-in relative group/image">
               <ProtectedMedia>
                 {signedUrl && (
-                  <img
-                    src={signedUrl}
-                    alt={product.name}
-                    className="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-700 group-hover:scale-110"
-                  />
+                  product.media_type === "video" ? (
+                    <div className="relative w-full h-full flex items-center justify-center">
+                      <video
+                        src={signedUrl}
+                        className="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-700 group-hover:scale-110"
+                        muted
+                        playsInline
+                        preload="metadata"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <div className="h-12 w-12 rounded-full bg-primary/80 flex items-center justify-center shadow-xl border border-white/20">
+                          <Play className="h-6 w-6 text-white fill-current" />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <img
+                      src={signedUrl}
+                      alt={product.name}
+                      className="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-700 group-hover:scale-110"
+                    />
+                  )
                 )}
               </ProtectedMedia>
               <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
-                <ImageIcon className="h-8 w-8 text-white drop-shadow-lg" />
+                {product.media_type === "video" ? (
+                  <Play className="h-8 w-8 text-white drop-shadow-lg" />
+                ) : (
+                  <ImageIcon className="h-8 w-8 text-white drop-shadow-lg" />
+                )}
               </div>
             </button>
           </DialogTrigger>
@@ -431,7 +452,7 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
         
         <div className="absolute top-4 right-4 z-20">
           <span className="px-3 py-1 rounded-full bg-background/80 backdrop-blur-md text-[10px] font-bold uppercase tracking-widest border border-white/10">
-            Design
+            {product.media_type === "video" ? "Video Edit" : "Design"}
           </span>
         </div>
       </div>

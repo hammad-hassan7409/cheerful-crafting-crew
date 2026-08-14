@@ -46,7 +46,7 @@ export const getSignedUrl = createServerFn({ method: "GET" })
     // Use service role client to ensure we can always generate signed URLs for legitimate media
     const { data: signedData, error } = await supabaseAdmin.storage
       .from("product-media")
-      .createSignedUrl(decodedPath, 3600); // 1 hour
+      .createSignedUrl(decodedPath, 7200); // 2 hours for stable viewing session
 
     if (error || !signedData?.signedUrl) {
       if (error?.message?.includes('Object not found') || (error as any)?.status === 404 || (error as any)?.code === 'NoSuchKey') {

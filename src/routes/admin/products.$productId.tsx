@@ -143,7 +143,8 @@ function ProductFormPage() {
     setPendingFile(file);
 
     // Update form type immediately
-    form.setValue("media_type", "image", { shouldValidate: true });
+    const isVideo = file.type.startsWith("video/");
+    form.setValue("media_type", isVideo ? "video" : "image", { shouldValidate: true });
 
 
     // Create local preview immediately
@@ -191,9 +192,12 @@ function ProductFormPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     
-    // Check if image
-    if (!file.type.startsWith("image/")) {
-      toast.error("Only images are allowed.");
+    // Check if image or video
+    const isImage = file.type.startsWith("image/");
+    const isVideo = file.type.startsWith("video/");
+    
+    if (!isImage && !isVideo) {
+      toast.error("Only images and videos are allowed.");
       e.target.value = "";
       return;
     }
@@ -243,7 +247,7 @@ function ProductFormPage() {
   if (productLoading) return <div>Loading...</div>;
 
   const currentMediaUrl = form.watch("media_url");
-  const currentMediaType = "image";
+  const currentMediaType = form.watch("media_type");
   const displayUrl = localPreview || signedUrl;
 
 
@@ -282,17 +286,26 @@ function ProductFormPage() {
         </div>
 
         <div className="space-y-4">
-          <Label>Media File (Image)</Label>
+          <Label>Media File (Image or Video)</Label>
           
           {displayUrl ? (
             <div className="space-y-4">
               <div className="relative group rounded-lg overflow-hidden border border-zinc-200 aspect-video bg-black flex items-center justify-center">
-                <img 
-                  src={displayUrl} 
-                  alt="Product preview" 
-                  className="max-w-full max-h-full object-contain"
-                  key={displayUrl}
-                />
+                {currentMediaType === "video" ? (
+                  <video 
+                    src={displayUrl} 
+                    className="max-w-full max-h-full object-contain"
+                    controls={!uploading}
+                    key={displayUrl}
+                  />
+                ) : (
+                  <img 
+                    src={displayUrl} 
+                    alt="Product preview" 
+                    className="max-w-full max-h-full object-contain"
+                    key={displayUrl}
+                  />
+                )}
 
                 
                 {!uploading && (
@@ -371,13 +384,13 @@ function ProductFormPage() {
                     <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
                   </svg>
                   <p className="mb-2 text-sm text-zinc-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                  <p className="text-xs text-zinc-500">Image (MAX. 400MB)</p>
+                  <p className="text-xs text-zinc-500">Image or Video (MAX. 400MB)</p>
                 </div>
                   <input 
                     type="file" 
                     className="hidden" 
                     onChange={handleFileUpload} 
-                    accept="image/*" 
+                    accept="image/*,video/*" 
                     disabled={uploading}
                   />
                 </label>
