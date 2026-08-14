@@ -13,36 +13,13 @@ import { useServerFn } from "@tanstack/react-start";
 import { getSignedUrl } from "@/lib/media.functions";
 import { useSignedUrl } from "@/hooks/use-signed-url";
 import { getStorageUsage } from "@/lib/storage.functions";
+import { productSchema, type ProductFormValues, getCategories, getProduct } from "@/lib/products-admin.functions";
 
 import { useState, useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-
-const productSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  category_id: z.string().uuid("Category is required"),
-  media_url: z.string().min(1, "Please upload a media file"),
-  media_type: z.enum(["video", "image"]),
-  original_price: z.number().min(0),
-  discounted_price: z.number().min(0),
-  description: z.string().refine((val) => {
-    if (!val) return true;
-    const words = val.trim().split(/\s+/).filter(word => word.length > 0);
-    return words.length <= 500;
-  }, "Maximum description length is 500 words"),
-});
-
-type ProductFormValues = {
-  name: string;
-  category_id: string;
-  media_url: string;
-  media_type: "video" | "image";
-  original_price: number;
-  discounted_price: number;
-  description: string;
-};
 
 export const Route = createFileRoute("/admin/products/$productId")({
   component: ProductFormPage,
@@ -69,21 +46,12 @@ function ProductFormPage() {
 
   const { data: categories } = useQuery({
     queryKey: ["categories"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("categories").select("*").order("name");
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => getCategories(),
   });
 
   const { data: product, isLoading: productLoading } = useQuery({
     queryKey: ["product", productId],
-    queryFn: async () => {
-      if (isNew) return null;
-      const { data, error } = await supabase.from("products").select("*").eq("id", productId).single();
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => getProduct(productId),
     enabled: !isNew,
   });
 
