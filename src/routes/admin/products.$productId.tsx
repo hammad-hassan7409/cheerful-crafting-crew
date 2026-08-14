@@ -110,17 +110,11 @@ function ProductFormPage() {
       };
       if (isNew) {
         const { data, error } = await supabase.from("products").insert([payload]).select();
-        if (error) {
-          console.error("Insert error:", error);
-          throw error;
-        }
+        if (error) throw error;
         return data;
       } else {
         const { data, error } = await supabase.from("products").update(payload).eq("id", productId).select();
-        if (error) {
-          console.error("Update error:", error);
-          throw error;
-        }
+        if (error) throw error;
         return data;
       }
     },
@@ -157,18 +151,17 @@ function ProductFormPage() {
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      // Upload with explicit content type to ensure browser plays it correctly
+      // Upload with optimized settings
       const { data: uploadData, error: uploadErr } = await supabase.storage
         .from("product-media")
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false,
-          contentType: file.type // CRITICAL: Ensure MIME type is preserved
+          contentType: file.type, 
+          duplex: 'half',
         });
 
-      if (uploadErr) {
-        throw uploadErr;
-      }
+      if (uploadErr) throw uploadErr;
 
       setUploadProgress(100);
       queryClient.invalidateQueries({ queryKey: ["storage-usage"] });
