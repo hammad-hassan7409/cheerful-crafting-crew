@@ -154,7 +154,7 @@ function ProductDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
           {/* Media Section */}
           <div className="space-y-4">
-            <div className="aspect-[4/5] md:aspect-square lg:aspect-video bg-muted rounded-3xl overflow-hidden border border-border/40 relative shadow-2xl group/media">
+            <div className="aspect-video bg-muted rounded-3xl overflow-hidden border border-border/40 relative shadow-2xl group/media">
               <ProtectedMedia 
                 type={product.media_type as "video" | "image"} 
                 scale={product.media_type === "image" ? zoom : 1}
