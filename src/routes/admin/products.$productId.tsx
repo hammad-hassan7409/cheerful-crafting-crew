@@ -169,16 +169,14 @@ function ProductFormPage() {
     setUploadError(null);
     setPendingFile(file);
 
+    // Update form type immediately
+    form.setValue("media_type", file.type.startsWith("video") ? "video" : "image", { shouldValidate: true });
+
     // Create local preview immediately
     const previewUrl = URL.createObjectURL(file);
     setLocalPreview(previewUrl);
-    form.setValue("media_type", file.type.startsWith("video") ? "video" : "image", { shouldValidate: true });
 
     try {
-      // 1. Ensure bucket exists (Try to create if it doesn't - will fail if RLS prevents but good attempt)
-      // This is a common issue where the bucket is missing in the specific environment.
-      // We try to use it and handle errors.
-      
       const fileExt = file.name.split(".").pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `${fileName}`;
