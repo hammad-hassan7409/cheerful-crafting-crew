@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogIn, Play, Image as ImageIcon, ExternalLink, ChevronRight, Loader2, ShieldAlert, MessageSquare } from "lucide-react";
+import { LogIn, Play, Image as ImageIcon, ExternalLink, ChevronRight, Loader2, ShieldAlert, MessageSquare, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useState, useEffect, useCallback, type ReactNode } from "react";
 import { toast } from "sonner";
@@ -32,7 +32,24 @@ export const Route = createFileRoute("/")({
   }),
 });
 
-function ProtectedMedia({ children, type = "video" }: { children: ReactNode; type?: "video" | "image" }) {
+function ProtectedMedia({ 
+  children, 
+  type = "video",
+  scale = 1,
+  onScaleChange,
+  isZoomEnabled = false
+}: { 
+  children: ReactNode; 
+  type?: "video" | "image";
+  scale?: number;
+  onScaleChange?: (scale: number) => void;
+  isZoomEnabled?: boolean;
+}) {
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+  const [internalRef, setInternalRef] = useState<HTMLDivElement | null>(null);
+
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     toast.error("Downloads are disabled to protect AR EDITZ samples.", {
@@ -40,16 +57,93 @@ function ProtectedMedia({ children, type = "video" }: { children: ReactNode; typ
     });
   }, []);
 
+  // Pinch to zoom logic
+  useEffect(() => {
+    if (!internalRef || type !== "image" || !isZoomEnabled) return;
+
+    let initialDist = 0;
+    let initialScale = scale;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2 && e.touches[0] && e.touches[1]) {
+        initialDist = Math.hypot(
+          e.touches[0].pageX - e.touches[1].pageX,
+          e.touches[0].pageY - e.touches[1].pageY
+        );
+        initialScale = scale;
+      } else if (e.touches.length === 1 && scale > 1 && e.touches[0]) {
+        setIsDragging(true);
+        setStartPos({
+          x: e.touches[0].pageX - offset.x,
+          y: e.touches[0].pageY - offset.y
+        });
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && initialDist > 0 && e.touches[0] && e.touches[1]) {
+        e.preventDefault();
+        const dist = Math.hypot(
+          e.touches[0].pageX - e.touches[1].pageX,
+          e.touches[0].pageY - e.touches[1].pageY
+        );
+        const newScale = Math.min(Math.max(1, (dist / initialDist) * initialScale), 3);
+        onScaleChange?.(newScale);
+      } else if (e.touches.length === 1 && isDragging && scale > 1 && e.touches[0]) {
+        e.preventDefault();
+        const newX = e.touches[0].pageX - startPos.x;
+        const newY = e.touches[0].pageY - startPos.y;
+        
+        // Bounds checking
+        const limitX = (scale - 1) * (internalRef.clientWidth / 2);
+        const limitY = (scale - 1) * (internalRef.clientHeight / 2);
+        
+        setOffset({
+          x: Math.min(Math.max(newX, -limitX), limitX),
+          y: Math.min(Math.max(newY, -limitY), limitY)
+        });
+      }
+    };
+
+    const handleTouchEnd = () => {
+      initialDist = 0;
+      setIsDragging(false);
+    };
+
+    internalRef.addEventListener("touchstart", handleTouchStart, { passive: false });
+    internalRef.addEventListener("touchmove", handleTouchMove, { passive: false });
+    internalRef.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      internalRef.removeEventListener("touchstart", handleTouchStart);
+      internalRef.removeEventListener("touchmove", handleTouchMove);
+      internalRef.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [internalRef, type, scale, onScaleChange, isZoomEnabled, isDragging, startPos, offset]);
+
+  // Reset offset when scale returns to 1
+  useEffect(() => {
+    if (scale === 1) {
+      setOffset({ x: 0, y: 0 });
+    }
+  }, [scale]);
+
   return (
     <div 
-      className="relative h-full w-full select-none"
+      ref={setInternalRef}
+      className="relative h-full w-full select-none overflow-hidden touch-none"
       onContextMenu={handleContextMenu}
       onDragStart={(e) => e.preventDefault()}
     >
-      {/* Invisible guard overlay for images to prevent "Save as" dragging */}
-      {type === "image" && <div className="absolute inset-0 z-10 bg-transparent" />}
-      
-      {children}
+      <div 
+        className="w-full h-full transition-transform duration-200 ease-out flex items-center justify-center"
+        style={{ 
+          transform: `scale(${scale}) translate(${offset.x / scale}px, ${offset.y / scale}px)` 
+        }}
+      >
+        {type === "image" && <div className="absolute inset-0 z-10 bg-transparent" />}
+        {children}
+      </div>
     </div>
   );
 }
@@ -83,7 +177,7 @@ function VideoPreview({ mediaUrl }: { mediaUrl: string }) {
       {signedUrl && (
         <video
           src={signedUrl}
-          className={`h-full w-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+          className={`max-w-full max-h-full w-auto h-auto object-contain grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
           muted
           playsInline
           loop
@@ -199,6 +293,63 @@ function VideoDialog({ mediaUrl, productName }: { mediaUrl: string; productName:
 }
 
 
+
+function ImageZoomDialog({ signedUrl, productName }: { signedUrl: string | null; productName: string }) {
+  const [zoom, setZoom] = useState(1);
+  return (
+    <div className="relative w-full h-full flex items-center justify-center">
+      <ProtectedMedia 
+        type="image" 
+        scale={zoom} 
+        onScaleChange={setZoom}
+        isZoomEnabled={true}
+      >
+        {signedUrl && (
+          <img 
+            src={signedUrl} 
+            alt={productName} 
+            className="max-w-full max-h-[90vh] w-auto h-auto object-contain"
+          />
+        )}
+      </ProtectedMedia>
+      
+      {/* Zoom Controls for Desktop in Dialog */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 p-2 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 z-20">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setZoom(prev => Math.max(prev - 0.25, 1))}
+          disabled={zoom <= 1}
+          className="h-10 w-10 rounded-xl text-white hover:bg-white/10 disabled:opacity-30"
+        >
+          <ZoomOut className="h-5 w-5" />
+        </Button>
+        <div className="w-12 text-center text-[10px] font-bold text-white uppercase tracking-widest">
+          {Math.round(zoom * 100)}%
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setZoom(prev => Math.min(prev + 0.25, 3))}
+          disabled={zoom >= 3}
+          className="h-10 w-10 rounded-xl text-white hover:bg-white/10 disabled:opacity-30"
+        >
+          <ZoomIn className="h-5 w-5" />
+        </Button>
+        <div className="w-[1px] h-6 bg-white/10 mx-1" />
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setZoom(1)}
+          disabled={zoom === 1}
+          className="h-10 w-10 rounded-xl text-white hover:bg-white/10 disabled:opacity-30"
+        >
+          <RotateCcw className="h-5 w-5" />
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 function Index() {
   const navigate = useNavigate();
@@ -413,7 +564,7 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
     <div
       className="group relative flex flex-col rounded-2xl border border-border/50 bg-card/50 transition-all hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 overflow-hidden"
     >
-      <div className="aspect-[16/9] relative w-full overflow-hidden bg-muted">
+      <div className="relative w-full overflow-hidden bg-muted flex items-center justify-center min-h-[200px]">
         {product.media_type === "video" ? (
           <VideoPreview mediaUrl={product.media_url} />
         ) : (
@@ -425,7 +576,7 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
                     <img
                       src={signedUrl}
                       alt={product.name}
-                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      className="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-700 group-hover:scale-110"
                     />
                   )}
                 </ProtectedMedia>
@@ -434,16 +585,8 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
                 </div>
               </button>
             </DialogTrigger>
-            <DialogContent className="max-w-[90vw] max-h-[90vh] p-0 overflow-hidden bg-transparent border-none">
-              <ProtectedMedia type="image">
-                {signedUrl && (
-                  <img 
-                    src={signedUrl} 
-                    alt={product.name} 
-                    className="h-full w-full object-contain rounded-lg"
-                  />
-                )}
-              </ProtectedMedia>
+            <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 overflow-hidden bg-black/90 border-white/10 flex items-center justify-center">
+              <ImageZoomDialog signedUrl={signedUrl} productName={product.name} />
             </DialogContent>
           </Dialog>
         )}
