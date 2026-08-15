@@ -412,16 +412,11 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
               <ProtectedMedia>
                 {signedUrl && (
                   product.media_type === "video" ? (
-                    <div className="relative w-full h-full flex items-center justify-center">
-                      <video
-                        className="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-700 group-hover:scale-110"
-                        muted
-                        playsInline
-                        preload="metadata"
-                      >
-                        <source src={signedUrl} type="video/mp4" />
-                      </video>
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                    <div className="relative w-full h-full flex items-center justify-center bg-black/40">
+                      {/* Grid video optimization: Do not render <video> tag in the grid.
+                          Use a static preview icon and rely on the detail page for playback.
+                          This prevents a "preload storm" that causes buffering on first load. */}
+                      <div className="absolute inset-0 flex items-center justify-center">
                         <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-primary/80 flex items-center justify-center shadow-xl border border-white/20">
                           <Play className="h-4 w-4 md:h-5 md:w-5 text-white fill-current" />
                         </div>

@@ -242,8 +242,11 @@ function ProductDetailPage() {
                     />
                   )
                 ) : (
-                  <div className="flex items-center justify-center h-64 w-full">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
+                  <div className="flex flex-col items-center justify-center h-64 w-full gap-4">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest animate-pulse">
+                      Preparing Stream...
+                    </p>
                   </div>
                 )}
               </ProtectedMedia>
