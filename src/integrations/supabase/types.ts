@@ -39,10 +39,12 @@ export type Database = {
           description: string | null
           discounted_price: number
           id: string
+          is_pinned: boolean | null
           media_type: string
           media_url: string
           name: string
           original_price: number
+          pin_order: number | null
         }
         Insert: {
           category_id: string
@@ -50,10 +52,12 @@ export type Database = {
           description?: string | null
           discounted_price: number
           id?: string
+          is_pinned?: boolean | null
           media_type: string
           media_url: string
           name: string
           original_price: number
+          pin_order?: number | null
         }
         Update: {
           category_id?: string
@@ -61,10 +65,12 @@ export type Database = {
           description?: string | null
           discounted_price?: number
           id?: string
+          is_pinned?: boolean | null
           media_type?: string
           media_url?: string
           name?: string
           original_price?: number
+          pin_order?: number | null
         }
         Relationships: [
           {
