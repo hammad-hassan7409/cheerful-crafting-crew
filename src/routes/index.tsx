@@ -452,9 +452,9 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
           </DialogContent>
         </Dialog>
         
-        <div className="absolute top-4 right-4 z-20">
-          <span className="px-3 py-1 rounded-full bg-background/80 backdrop-blur-md text-[10px] font-bold uppercase tracking-widest border border-white/10">
-            {product.media_type === "video" ? "Video Edit" : "Design"}
+        <div className="absolute top-2 right-2 z-20">
+          <span className="px-2 py-0.5 rounded-full bg-background/80 backdrop-blur-md text-[8px] font-bold uppercase tracking-widest border border-white/10">
+            {product.media_type === "video" ? "Video" : "Design"}
           </span>
         </div>
       </div>
