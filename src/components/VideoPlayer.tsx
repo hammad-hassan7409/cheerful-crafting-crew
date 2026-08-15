@@ -130,7 +130,6 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
         {src && (
           <video
             ref={videoRef}
-            key={src} // Add key back for the detail player to ensure clean state on source change
             className="w-full h-full object-contain bg-zinc-900"
             onPlay={() => {
               setIsPlaying(true);
