@@ -143,7 +143,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             onCanPlay={() => setIsLoading(false)}
             onError={handleError}
             playsInline
-            preload="auto" // Change back to auto for the actual player to encourage buffering
+            preload="auto"
             crossOrigin="anonymous"
           >
             <source src={src} type="video/mp4" />
