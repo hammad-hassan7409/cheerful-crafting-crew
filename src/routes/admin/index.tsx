@@ -122,7 +122,7 @@ function AdminDashboard() {
                       variant="ghost"
                       size="icon"
                       className={product.is_pinned ? "text-primary" : "text-muted-foreground"}
-                      onClick={() => togglePinMutation.mutate({ id: product.id, is_pinned: product.is_pinned })}
+                      onClick={() => togglePinMutation.mutate({ id: product.id, is_pinned: !!product.is_pinned })}
                       title={product.is_pinned ? "Unpin from home" : "Pin to home"}
                     >
                       {product.is_pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
