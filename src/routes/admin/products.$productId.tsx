@@ -110,7 +110,9 @@ function ProductFormPage() {
       console.log("Saving product values:", values);
       const payload = {
         ...values,
-        description: values.description || ""
+        description: values.description || "",
+        is_pinned: values.is_pinned ?? false,
+        pin_order: values.pin_order ?? 0
       };
       if (isNew) {
         const { data, error } = await supabase.from("products").insert([payload]).select();
