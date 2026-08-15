@@ -423,8 +423,8 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
                         <source src={signedUrl} type="video/mp4" />
                       </video>
                       <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                        <div className="h-12 w-12 rounded-full bg-primary/80 flex items-center justify-center shadow-xl border border-white/20">
-                          <Play className="h-6 w-6 text-white fill-current" />
+                        <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-primary/80 flex items-center justify-center shadow-xl border border-white/20">
+                          <Play className="h-4 w-4 md:h-5 md:w-5 text-white fill-current" />
                         </div>
                       </div>
                     </div>
