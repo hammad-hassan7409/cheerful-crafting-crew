@@ -182,6 +182,37 @@ function ProductFormPage() {
   };
 
 
+  const checkIsH265 = async (file: File): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      
+      const timeout = setTimeout(() => {
+        video.src = "";
+        video.load();
+        resolve(false);
+      }, 5000);
+
+      video.onloadedmetadata = () => {
+        clearTimeout(timeout);
+        // HEVC/H.265 often reports 0 width/height or fails to reach readyState 2+ 
+        // in browsers without hardware support (Chrome/Firefox/Win/Linux).
+        if (video.videoWidth === 0 && file.type.startsWith("video/")) {
+           resolve(true);
+        }
+        resolve(false);
+      };
+
+      video.onerror = () => {
+        clearTimeout(timeout);
+        // If it's an MP4 but the browser throws a decode error immediately, it's likely H.265
+        resolve(true);
+      };
+
+      video.src = URL.createObjectURL(file);
+    });
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -194,6 +225,20 @@ function ProductFormPage() {
       toast.error("Only images and videos are allowed.");
       e.target.value = "";
       return;
+    }
+
+    if (isVideo) {
+      setUploading(true);
+      const isH265 = await checkIsH265(file);
+      setUploading(false);
+      
+      if (isH265) {
+        toast.error("H.265/HEVC detected. Please re-export your video as H.264 MP4 + AAC for compatibility.", {
+          duration: 6000,
+        });
+        e.target.value = "";
+        return;
+      }
     }
     
     // Reset the file input
