@@ -130,6 +130,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
         {src && (
           <video
             ref={videoRef}
+            key={src} // Add key back for the detail player to ensure clean state on source change
             className="w-full h-full object-contain bg-zinc-900"
             onPlay={() => {
               setIsPlaying(true);
@@ -142,7 +143,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             onCanPlay={() => setIsLoading(false)}
             onError={handleError}
             playsInline
-            preload="metadata"
+            preload="auto" // Change back to auto for the actual player to encourage buffering
             crossOrigin="anonymous"
           >
             <source src={src} type="video/mp4" />
