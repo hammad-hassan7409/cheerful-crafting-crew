@@ -117,22 +117,6 @@ function LoginPage() {
               {loading ? "Logging in..." : "Login"}
             </Button>
           </form>
-          <div className="mt-4 pt-4 border-t border-border/50 text-center">
-            <button 
-              onClick={handleForceReset}
-              disabled={resetting}
-              className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center justify-center gap-2 w-full"
-            >
-              {resetting ? (
-                <>
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  Resetting to #Cricket...
-                </>
-              ) : (
-                "Restore original password #Cricket"
-              )}
-            </button>
-          </div>
         </CardContent>
       </Card>
     </div>
