@@ -334,7 +334,7 @@ function Index() {
                 </h2>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 md:gap-6">
                 {categoryProducts.map((product: any) => (
                   <Link 
                     key={product.id} 
@@ -405,7 +405,7 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
     <div
       className="group relative flex flex-col rounded-xl border border-border/50 bg-card/50 transition-all hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 overflow-hidden h-full"
     >
-      <div className="relative w-full aspect-square overflow-hidden bg-muted flex items-center justify-center">
+      <div className="relative w-full aspect-square md:aspect-video overflow-hidden bg-muted flex items-center justify-center">
         <Dialog>
           <DialogTrigger asChild>
             <button className="h-full w-full cursor-zoom-in relative group/image flex items-center justify-center">
@@ -459,7 +459,7 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
         </div>
       </div>
 
-      <div className="p-3 md:p-4 flex flex-col flex-1">
+      <div className="p-2 md:p-3 flex flex-col flex-1">
         <div className="mb-2 md:mb-3">
           <h3 className="text-sm md:text-base font-bold mb-0.5 group-hover:text-primary transition-colors line-clamp-1">{product.name}</h3>
           <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Project Sample</p>
