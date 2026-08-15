@@ -334,7 +334,7 @@ function Index() {
                 </h2>
               </div>
 
-              <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                 {categoryProducts.map((product: any) => (
                   <Link 
                     key={product.id} 
