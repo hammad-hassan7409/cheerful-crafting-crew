@@ -233,7 +233,11 @@ function ProductDetailPage() {
               >
                 {signedUrl ? (
                   product.media_type === "video" ? (
-                    <VideoPlayer src={signedUrl} className="w-full" />
+                    <VideoPlayer 
+                      src={signedUrl} 
+                      className="w-full" 
+                      poster={signedUrl} // Use signed URL as poster to show something immediately
+                    />
                   ) : (
                     <img
                       src={signedUrl}

@@ -26,6 +26,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
     if (isPlaying) {
       videoRef.current.pause();
     } else {
+      setIsLoading(true); // Show loading state immediately while waiting for buffer
       videoRef.current.play().catch(e => {
         console.error("Playback failed:", e);
         setError("Playback failed. Please try again.");
