@@ -459,33 +459,32 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
         </div>
       </div>
 
-      <div className="p-6 flex flex-col flex-1">
-        <div className="mb-4">
-          <h3 className="text-xl font-bold mb-1 group-hover:text-primary transition-colors">{product.name}</h3>
-          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Project Sample</p>
+      <div className="p-3 md:p-4 flex flex-col flex-1">
+        <div className="mb-2 md:mb-3">
+          <h3 className="text-sm md:text-base font-bold mb-0.5 group-hover:text-primary transition-colors line-clamp-1">{product.name}</h3>
+          <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Project Sample</p>
         </div>
 
-        <div className="mt-auto flex items-end justify-between gap-4">
-          <div className="flex flex-col">
-            <span className="text-2xl font-black text-primary">RS. {product.discounted_price}</span>
-            <span className="text-sm text-muted-foreground line-through opacity-60 italic">
+        <div className="mt-auto flex flex-col gap-3">
+          <div className="flex items-baseline gap-2">
+            <span className="text-base md:text-lg font-black text-primary">RS. {product.discounted_price}</span>
+            <span className="text-[10px] md:text-xs text-muted-foreground line-through opacity-60 italic">
               RS. {product.original_price}
             </span>
           </div>
+
+          <Button
+            className="w-full h-8 md:h-10 bg-primary hover:bg-primary/80 text-white text-xs font-bold rounded-lg shadow-lg shadow-primary/20 transition-all hover:shadow-primary/40 flex items-center justify-center gap-2"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSendToEditor(product.name);
+            }}
+          >
+            Send
+            <MessageSquare className="h-3 w-3 md:h-4 md:w-4" />
+          </Button>
         </div>
-
-        <Button
-          className="w-full mt-6 h-12 bg-primary hover:bg-primary/80 text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all hover:shadow-primary/40 flex items-center justify-center gap-2"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleSendToEditor(product.name);
-          }}
-        >
-          Send to Editor
-
-          <MessageSquare className="h-4 w-4" />
-        </Button>
       </div>
     </div>
   );
