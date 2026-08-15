@@ -13,8 +13,8 @@ export const productSchema = z.object({
     const words = val.trim().split(/\s+/).filter(word => word.length > 0);
     return words.length <= 500;
   }, "Maximum description length is 500 words"),
-  is_pinned: z.boolean().default(false),
-  pin_order: z.number().int().min(0).default(0),
+  is_pinned: z.boolean(),
+  pin_order: z.number().int().min(0),
 });
 
 export type ProductFormValues = z.infer<typeof productSchema>;
