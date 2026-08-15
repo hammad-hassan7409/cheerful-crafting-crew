@@ -42,7 +42,7 @@ export const getSignedUrl = createServerFn({ method: "GET" })
     
     const { data: signedData, error } = await supabaseAdmin.storage
       .from("product-media")
-      .createSignedUrl(filePath, 7200); // 2 hours
+      .createSignedUrl(filePath, 21600); // 6 hours to reduce re-fetching and 403s during long sessions
 
     if (error || !signedData?.signedUrl) {
       console.error("[MediaFn] Signed URL error:", error, "Path:", filePath);
