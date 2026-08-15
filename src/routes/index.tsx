@@ -326,10 +326,10 @@ function Index() {
           if (!categoryProducts || categoryProducts.length === 0) return null;
 
           return (
-            <section key={category.id} className="mb-24">
-              <div className="flex items-center gap-4 mb-10">
-                <div className="h-1 w-12 bg-primary rounded-full" />
-                <h2 className="text-3xl font-bold tracking-tight uppercase">
+            <section key={category.id} className="mb-16 md:mb-24">
+              <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-10">
+                <div className="h-1 w-8 md:w-12 bg-primary rounded-full" />
+                <h2 className="text-xl md:text-3xl font-bold tracking-tight uppercase">
                   {category.name}
                 </h2>
               </div>
