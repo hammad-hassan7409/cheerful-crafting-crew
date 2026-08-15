@@ -27,6 +27,23 @@ function AdminDashboard() {
     },
   });
 
+  const togglePinMutation = useMutation({
+    mutationFn: async ({ id, is_pinned }: { id: string; is_pinned: boolean }) => {
+      const { error } = await supabase
+        .from("products")
+        .update({ is_pinned: !is_pinned, pin_order: !is_pinned ? 0 : 0 })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Product pinning updated");
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.message);
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async (product: any) => {
       // 1. Delete media from storage if it exists
@@ -101,6 +118,15 @@ function AdminDashboard() {
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex justify-end gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={product.is_pinned ? "text-primary" : "text-muted-foreground"}
+                      onClick={() => togglePinMutation.mutate({ id: product.id, is_pinned: product.is_pinned })}
+                      title={product.is_pinned ? "Unpin from home" : "Pin to home"}
+                    >
+                      {product.is_pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+                    </Button>
                     <Button variant="ghost" size="icon" asChild>
                       <Link to="/admin/products/$productId" params={{ productId: product.id }}>
                         <Edit className="h-4 w-4" />
