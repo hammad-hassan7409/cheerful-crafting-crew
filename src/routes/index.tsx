@@ -417,8 +417,7 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
                         className="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-700 group-hover:scale-110"
                         muted
                         playsInline
-                        preload="auto"
-                        key={signedUrl}
+                        preload="metadata"
                       >
                         <source src={signedUrl} type="video/mp4" />
                       </video>
