@@ -403,12 +403,12 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
 
   return (
     <div
-      className="group relative flex flex-col rounded-2xl border border-border/50 bg-card/50 transition-all hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 overflow-hidden"
+      className="group relative flex flex-col rounded-xl border border-border/50 bg-card/50 transition-all hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 overflow-hidden h-full"
     >
-      <div className="relative w-full overflow-hidden bg-muted flex items-center justify-center min-h-[200px]">
+      <div className="relative w-full aspect-[4/5] overflow-hidden bg-muted flex items-center justify-center">
         <Dialog>
           <DialogTrigger asChild>
-            <button className="h-full w-full cursor-zoom-in relative group/image">
+            <button className="h-full w-full cursor-zoom-in relative group/image flex items-center justify-center">
               <ProtectedMedia>
                 {signedUrl && (
                   product.media_type === "video" ? (
