@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogIn, Image as ImageIcon, ExternalLink, ChevronRight, Loader2, ShieldAlert, MessageSquare, ZoomIn, ZoomOut, RotateCcw, Play } from "lucide-react";
+import { LogIn, Image as ImageIcon, ExternalLink, ChevronRight, Loader2, ShieldAlert, MessageSquare, ZoomIn, ZoomOut, RotateCcw, Play, Pin } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useState, useEffect, useCallback, type ReactNode, memo } from "react";
 import { toast } from "sonner";
@@ -452,7 +452,12 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
           </DialogContent>
         </Dialog>
         
-        <div className="absolute top-2 right-2 z-20">
+        <div className="absolute top-2 right-2 z-20 flex gap-1">
+          {product.is_pinned && (
+            <div className="h-6 w-6 md:h-8 md:w-8 rounded-lg bg-primary/90 flex items-center justify-center shadow-lg border border-white/20" title="Pinned Product">
+              <Pin className="h-3 w-3 md:h-4 md:w-4 text-white fill-current" />
+            </div>
+          )}
           <span className="px-2 py-0.5 rounded-full bg-background/80 backdrop-blur-md text-[8px] font-bold uppercase tracking-widest border border-white/10">
             {product.media_type === "video" ? "Video" : "Design"}
           </span>
