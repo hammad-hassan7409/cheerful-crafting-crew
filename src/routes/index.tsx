@@ -459,7 +459,7 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
         </div>
       </div>
 
-      <div className="p-3 md:p-4 flex flex-col flex-1">
+      <div className="p-2 md:p-3 flex flex-col flex-1">
         <div className="mb-2 md:mb-3">
           <h3 className="text-sm md:text-base font-bold mb-0.5 group-hover:text-primary transition-colors line-clamp-1">{product.name}</h3>
           <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Project Sample</p>
