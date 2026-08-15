@@ -310,9 +310,9 @@ function Index() {
         </div>
       </header>
 
-      <main className="container mx-auto px-6 pt-32 pb-20">
-        <div className="mb-20 max-w-2xl">
-          <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-6">
+      <main className="container mx-auto px-4 md:px-6 pt-24 md:pt-32 pb-20">
+        <div className="mb-12 md:mb-20 max-w-2xl">
+          <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-4 md:mb-6">
             Creative <span className="text-primary italic">Editing</span> Showcase
           </h1>
           <p className="text-xl text-muted-foreground leading-relaxed">
@@ -326,15 +326,15 @@ function Index() {
           if (!categoryProducts || categoryProducts.length === 0) return null;
 
           return (
-            <section key={category.id} className="mb-24">
-              <div className="flex items-center gap-4 mb-10">
-                <div className="h-1 w-12 bg-primary rounded-full" />
-                <h2 className="text-3xl font-bold tracking-tight uppercase">
+            <section key={category.id} className="mb-16 md:mb-24">
+              <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-10">
+                <div className="h-1 w-8 md:w-12 bg-primary rounded-full" />
+                <h2 className="text-xl md:text-3xl font-bold tracking-tight uppercase">
                   {category.name}
                 </h2>
               </div>
 
-              <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                 {categoryProducts.map((product: any) => (
                   <Link 
                     key={product.id} 
@@ -403,12 +403,12 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
 
   return (
     <div
-      className="group relative flex flex-col rounded-2xl border border-border/50 bg-card/50 transition-all hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 overflow-hidden"
+      className="group relative flex flex-col rounded-xl border border-border/50 bg-card/50 transition-all hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 overflow-hidden h-full"
     >
-      <div className="relative w-full overflow-hidden bg-muted flex items-center justify-center min-h-[200px]">
+      <div className="relative w-full aspect-[4/5] overflow-hidden bg-muted flex items-center justify-center">
         <Dialog>
           <DialogTrigger asChild>
-            <button className="h-full w-full cursor-zoom-in relative group/image">
+            <button className="h-full w-full cursor-zoom-in relative group/image flex items-center justify-center">
               <ProtectedMedia>
                 {signedUrl && (
                   product.media_type === "video" ? (
@@ -423,8 +423,8 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
                         <source src={signedUrl} type="video/mp4" />
                       </video>
                       <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                        <div className="h-12 w-12 rounded-full bg-primary/80 flex items-center justify-center shadow-xl border border-white/20">
-                          <Play className="h-6 w-6 text-white fill-current" />
+                        <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-primary/80 flex items-center justify-center shadow-xl border border-white/20">
+                          <Play className="h-4 w-4 md:h-5 md:w-5 text-white fill-current" />
                         </div>
                       </div>
                     </div>
@@ -452,40 +452,39 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
           </DialogContent>
         </Dialog>
         
-        <div className="absolute top-4 right-4 z-20">
-          <span className="px-3 py-1 rounded-full bg-background/80 backdrop-blur-md text-[10px] font-bold uppercase tracking-widest border border-white/10">
-            {product.media_type === "video" ? "Video Edit" : "Design"}
+        <div className="absolute top-2 right-2 z-20">
+          <span className="px-2 py-0.5 rounded-full bg-background/80 backdrop-blur-md text-[8px] font-bold uppercase tracking-widest border border-white/10">
+            {product.media_type === "video" ? "Video" : "Design"}
           </span>
         </div>
       </div>
 
-      <div className="p-6 flex flex-col flex-1">
-        <div className="mb-4">
-          <h3 className="text-xl font-bold mb-1 group-hover:text-primary transition-colors">{product.name}</h3>
-          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Project Sample</p>
+      <div className="p-3 md:p-4 flex flex-col flex-1">
+        <div className="mb-2 md:mb-3">
+          <h3 className="text-sm md:text-base font-bold mb-0.5 group-hover:text-primary transition-colors line-clamp-1">{product.name}</h3>
+          <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Project Sample</p>
         </div>
 
-        <div className="mt-auto flex items-end justify-between gap-4">
-          <div className="flex flex-col">
-            <span className="text-2xl font-black text-primary">RS. {product.discounted_price}</span>
-            <span className="text-sm text-muted-foreground line-through opacity-60 italic">
+        <div className="mt-auto flex flex-col gap-3">
+          <div className="flex items-baseline gap-2">
+            <span className="text-base md:text-lg font-black text-primary">RS. {product.discounted_price}</span>
+            <span className="text-[10px] md:text-xs text-muted-foreground line-through opacity-60 italic">
               RS. {product.original_price}
             </span>
           </div>
+
+          <Button
+            className="w-full h-8 md:h-10 bg-primary hover:bg-primary/80 text-white text-xs font-bold rounded-lg shadow-lg shadow-primary/20 transition-all hover:shadow-primary/40 flex items-center justify-center gap-2"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSendToEditor(product.name);
+            }}
+          >
+            Send
+            <MessageSquare className="h-3 w-3 md:h-4 md:w-4" />
+          </Button>
         </div>
-
-        <Button
-          className="w-full mt-6 h-12 bg-primary hover:bg-primary/80 text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all hover:shadow-primary/40 flex items-center justify-center gap-2"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleSendToEditor(product.name);
-          }}
-        >
-          Send to Editor
-
-          <MessageSquare className="h-4 w-4" />
-        </Button>
       </div>
     </div>
   );
