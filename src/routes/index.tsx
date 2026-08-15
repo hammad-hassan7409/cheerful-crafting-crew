@@ -310,9 +310,9 @@ function Index() {
         </div>
       </header>
 
-      <main className="container mx-auto px-6 pt-32 pb-20">
-        <div className="mb-20 max-w-2xl">
-          <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-6">
+      <main className="container mx-auto px-4 md:px-6 pt-24 md:pt-32 pb-20">
+        <div className="mb-12 md:mb-20 max-w-2xl">
+          <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-4 md:mb-6">
             Creative <span className="text-primary italic">Editing</span> Showcase
           </h1>
           <p className="text-xl text-muted-foreground leading-relaxed">
