@@ -67,6 +67,8 @@ function ProductFormPage() {
       original_price: 0,
       discounted_price: 0,
       description: "",
+      is_pinned: false,
+      pin_order: 0,
     },
   });
 
@@ -82,6 +84,8 @@ function ProductFormPage() {
         original_price: Number(product.original_price),
         discounted_price: Number(product.discounted_price),
         description: product.description || "",
+        is_pinned: product.is_pinned || false,
+        pin_order: product.pin_order || 0,
       });
     }
   }, [product, form]);
@@ -465,6 +469,30 @@ function ProductFormPage() {
           </div>
           {form.formState.errors.description && (
             <p className="text-sm text-destructive">{form.formState.errors.description.message}</p>
+          )}
+        </div>
+
+        <div className="flex items-center space-x-4 p-4 rounded-lg border border-border bg-card/50">
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="is_pinned"
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+              {...form.register("is_pinned")}
+            />
+            <Label htmlFor="is_pinned" className="font-bold cursor-pointer">Pin to Homepage</Label>
+          </div>
+          
+          {form.watch("is_pinned") && (
+            <div className="flex items-center space-x-2 flex-1">
+              <Label htmlFor="pin_order" className="text-sm whitespace-nowrap">Priority (0 = first):</Label>
+              <Input
+                id="pin_order"
+                type="number"
+                className="w-20 h-8"
+                {...form.register("pin_order", { valueAsNumber: true })}
+              />
+            </div>
           )}
         </div>
 

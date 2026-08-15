@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Trash2, Edit } from "lucide-react";
+import { Trash2, Edit, Pin, PinOff } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 
@@ -19,6 +19,8 @@ function AdminDashboard() {
       const { data, error } = await supabase
         .from("products")
         .select("*, categories(name)")
+        .order("is_pinned", { ascending: false })
+        .order("pin_order", { ascending: true })
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -81,7 +83,15 @@ function AdminDashboard() {
           <tbody className="divide-y">
             {products?.map((product) => (
               <tr key={product.id} className="hover:bg-muted/30">
-                <td className="px-4 py-3 font-medium">{product.name}</td>
+                <td className="px-4 py-3 font-medium flex items-center gap-2">
+                  {product.name}
+                  {product.is_pinned && (
+                    <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-tighter text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                      <Pin className="h-3 w-3 fill-current" />
+                      Pinned #{product.pin_order}
+                    </span>
+                  )}
+                </td>
                 <td className="px-4 py-3">{(product.categories as any)?.name}</td>
                 <td className="px-4 py-3">
                   <span className="font-bold text-primary">RS. {product.discounted_price}</span>
