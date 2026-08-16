@@ -340,8 +340,8 @@ function Index() {
                 {categoryProducts
                   .sort((a, b) => {
                     // Pinned products first
-                    const aPinned = a.is_pinned && a.pin_order > 0;
-                    const bPinned = b.is_pinned && b.pin_order > 0;
+                    const aPinned = a.is_pinned && (a.pin_order || 0) > 0;
+                    const bPinned = b.is_pinned && (b.pin_order || 0) > 0;
                     
                     if (aPinned && !bPinned) return -1;
                     if (!aPinned && bPinned) return 1;
