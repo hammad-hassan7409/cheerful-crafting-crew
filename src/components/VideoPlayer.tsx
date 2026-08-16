@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 
 interface VideoPlayerProps {
   src: string;
-  poster?: string;
+  poster?: string | null;
   className?: string;
 }
 
