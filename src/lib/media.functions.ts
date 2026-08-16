@@ -23,7 +23,7 @@ export const getSignedUrl = createServerFn({ method: "GET" })
           if (bucketIndex !== -1 && bucketIndex < parts.length - 1) {
             filePath = parts.slice(bucketIndex + 1).join('/');
           } else {
-            filePath = parts[parts.length - 1]!;
+            console.log("[MediaFn] Final fallback path extraction:", filePath);
           }
         }
       } catch (e) {
