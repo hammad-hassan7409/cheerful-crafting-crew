@@ -99,7 +99,7 @@ function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="ammarhassan1888@gmail.com"
+                placeholder="Enter your email"
                 {...form.register("email")}
               />
               {form.formState.errors.email && (
