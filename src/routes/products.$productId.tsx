@@ -1,6 +1,9 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { getPublicSettings } from "@/lib/public-settings.functions";
+
 import { Button } from "@/components/ui/button";
 import { 
   Loader2, 
@@ -153,18 +156,12 @@ function ProductDetailPage() {
     },
   });
 
+  const fetchPublicSettings = useServerFn(getPublicSettings);
   const { data: settings } = useQuery({
     queryKey: ["settings"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("settings").select("*");
-      if (error) throw error;
-      const settingsMap: Record<string, any> = {};
-      data.forEach((s) => {
-        settingsMap[s.key] = s.value;
-      });
-      return settingsMap;
-    },
+    queryFn: () => fetchPublicSettings(),
   });
+
 
   const { url: signedUrl, isLoading: signedUrlLoading } = useSignedUrl(product?.media_url);
 
