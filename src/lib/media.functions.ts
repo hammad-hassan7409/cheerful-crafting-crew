@@ -36,10 +36,12 @@ export const getSignedUrl = createServerFn({ method: "GET" })
     filePath = decodeURIComponent(pathWithoutQuery!);
     
     // Remove bucket name and leading slashes
-    filePath = filePath.replace(/.*product-media\//, '').replace(/^\/+/, '');
+    if (filePath.includes('product-media/')) {
+      filePath = filePath.split('product-media/').pop()!;
+    }
+    filePath = filePath.replace(/^\/+/, '');
     
     if (!filePath) {
-      console.error("[MediaFn] Empty filePath after cleaning");
       return null;
     }
     
@@ -49,13 +51,11 @@ export const getSignedUrl = createServerFn({ method: "GET" })
         .createSignedUrl(filePath, 21600);
 
       if (error) {
-        console.error("[MediaFn] Supabase signing error:", error.message, "Path:", filePath);
         return null;
       }
       
       return signedData?.signedUrl || null;
     } catch (err) {
-      console.error("[MediaFn] Unexpected error during signing:", err);
       return null;
     }
   });
