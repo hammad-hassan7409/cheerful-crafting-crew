@@ -236,7 +236,7 @@ function ProductDetailPage() {
                     <VideoPlayer 
                       src={signedUrl} 
                       className="w-full" 
-                      poster={signedUrl} // Use signed URL as poster to show something immediately
+                      poster={product.media_type === "image" ? signedUrl : undefined} // Only use as poster if it's an image, though usually media_type is video here
                     />
                   ) : (
                     <img

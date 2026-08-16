@@ -412,7 +412,7 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
           <DialogTrigger asChild>
             <button className="h-full w-full cursor-zoom-in relative group/image flex items-center justify-center">
               <ProtectedMedia>
-                {signedUrl && (
+                {signedUrl ? (
                   product.media_type === "video" ? (
                     <div className="relative w-full h-full flex items-center justify-center bg-black/40">
                       <video
@@ -435,6 +435,10 @@ function ProductCard({ product, whatsappNumber }: { product: any; whatsappNumber
                       className="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-700 group-hover:scale-110"
                     />
                   )
+                ) : (
+                  <div className="flex items-center justify-center h-full w-full">
+                    <Loader2 className="h-5 w-5 animate-spin text-primary/40" />
+                  </div>
                 )}
 
               </ProtectedMedia>
