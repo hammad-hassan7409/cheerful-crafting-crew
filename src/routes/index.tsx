@@ -250,7 +250,7 @@ function Index() {
       const { data, error } = await supabase
         .from("products")
         .select("*, categories(name)")
-        .order("is_pinned", { ascending: false })
+        .order("is_pinned", { ascending: false, nullsFirst: false })
         .order("pin_order", { ascending: true })
         .order("created_at", { ascending: false });
       if (error) throw error;

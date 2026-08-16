@@ -17,6 +17,7 @@ import { useSignedUrl } from "@/hooks/use-signed-url";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { getStorageUsage } from "@/lib/storage.functions";
 import { productSchema, type ProductFormValues, getCategories, getProduct } from "@/lib/products-admin.functions";
+import { updatePinOrder } from "@/lib/pin-ordering.functions";
 
 import { useState, useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -39,6 +40,7 @@ function ProductFormPage() {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [localPreview, setLocalPreview] = useState<string | null>(null);
   const fetchStorage = useServerFn(getStorageUsage);
+  const updatePin = useServerFn(updatePinOrder);
 
   const { data: storageInfo } = useQuery({
     queryKey: ["storage-usage"],
@@ -124,7 +126,18 @@ function ProductFormPage() {
         return data;
       }
     },
-    onSuccess: () => {
+    onSuccess: async (data, variables) => {
+      const prodId = isNew ? data[0].id : productId;
+      
+      // If pin order was changed, apply the reordering logic
+      if (variables.pin_order !== undefined) {
+        try {
+          await updatePin({ data: { productId: prodId, newOrder: variables.pin_order } });
+        } catch (e) {
+          console.error("Failed to reorder pins:", e);
+        }
+      }
+
       toast.success(isNew ? "Product created" : "Product updated");
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["product", productId] });
@@ -474,26 +487,27 @@ function ProductFormPage() {
           )}
         </div>
 
-        <div className="flex items-center space-x-4 p-4 rounded-lg border border-border bg-card/50">
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="is_pinned"
-              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-              {...form.register("is_pinned")}
-            />
-            <Label htmlFor="is_pinned" className="font-bold cursor-pointer">Pin to Homepage</Label>
-          </div>
-          
-          {form.watch("is_pinned") && (
-            <div className="flex items-center space-x-2 flex-1">
-              <Label htmlFor="pin_order" className="text-sm whitespace-nowrap">Priority (0 = first):</Label>
+        <div className="flex flex-col space-y-4 p-4 rounded-lg border border-border bg-card/50">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="pin_order" className="font-bold">Pin Order (Homepage Priority)</Label>
+              <p className="text-xs text-muted-foreground">Set a number to pin this product to the top of the homepage gallery.</p>
+            </div>
+            <div className="flex items-center gap-3">
               <Input
                 id="pin_order"
                 type="number"
-                className="w-20 h-8"
+                min="0"
+                className="w-24 font-bold text-center"
                 {...form.register("pin_order", { valueAsNumber: true })}
               />
+              <span className="text-xs font-medium text-muted-foreground">0 = Not Pinned</span>
+            </div>
+          </div>
+          {form.watch("pin_order") > 0 && (
+            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/5 px-3 py-2 rounded-md border border-primary/10">
+              <Pin className="h-3 w-3 fill-current" />
+              Pinned at position #{form.watch("pin_order")}
             </div>
           )}
         </div>
