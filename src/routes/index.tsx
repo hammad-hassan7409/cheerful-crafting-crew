@@ -251,7 +251,7 @@ function Index() {
         .from("products")
         .select("*, categories(name)")
         .order("is_pinned", { ascending: false, nullsFirst: false })
-        .order("pin_order", { ascending: true })
+        .order("pin_order", { ascending: true, nullsFirst: false })
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
