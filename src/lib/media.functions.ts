@@ -43,9 +43,16 @@ export const getSignedUrl = createServerFn({ method: "GET" })
     console.log("[MediaFn] Extracted filePath:", filePath);
     
     // Clean up query parameters and URL encoding
-    filePath = decodeURIComponent(filePath.split('?')[0]!);
+    // Use a more robust split to handle multiple ? or complex characters
+    const pathWithoutQuery = filePath.includes('?') ? filePath.substring(0, filePath.indexOf('?')) : filePath;
+    filePath = decodeURIComponent(pathWithoutQuery);
     
-    if (!filePath) {
+    // Final check for bucket name in the cleaned path to ensure we don't include it
+    if (filePath.startsWith('product-media/')) {
+      filePath = filePath.substring('product-media/'.length);
+    }
+    
+    if (!filePath || filePath === '/') {
       throw new Error("Invalid media path provided");
     }
     
