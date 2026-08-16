@@ -8,6 +8,9 @@ import { useState, useEffect, useCallback, type ReactNode, memo } from "react";
 import { toast } from "sonner";
 import { useSignedUrl } from "@/hooks/use-signed-url";
 import { cn } from "@/lib/utils";
+import { getPublicSettings } from "@/lib/public-settings.functions";
+import { useServerFn } from "@tanstack/react-start";
+
 
 import {
   Dialog,
@@ -258,18 +261,12 @@ function Index() {
     },
   });
 
+  const fetchPublicSettings = useServerFn(getPublicSettings);
   const { data: settings } = useQuery({
     queryKey: ["settings"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("settings").select("*");
-      if (error) throw error;
-      const settingsMap: Record<string, any> = {};
-      data.forEach((s) => {
-        settingsMap[s.key] = s.value;
-      });
-      return settingsMap;
-    },
+    queryFn: () => fetchPublicSettings(),
   });
+
 
   const handleSendToEditor = useCallback((productName: string) => {
     const phoneNumber = settings?.["whatsapp_number"] || "923021937758";
