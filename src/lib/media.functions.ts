@@ -48,13 +48,20 @@ export const getSignedUrl = createServerFn({ method: "GET" })
     filePath = decodeURIComponent(pathWithoutQuery);
     
     // Final check for bucket name in the cleaned path to ensure we don't include it
-    if (filePath.startsWith('product-media/')) {
-      filePath = filePath.substring('product-media/'.length);
+    // Some URLs might have /product-media/ in the path even after cleaning
+    if (filePath.includes('product-media/')) {
+      const parts = filePath.split('product-media/');
+      filePath = parts[parts.length - 1]!;
     }
     
-    if (!filePath || filePath === '/') {
+    // Remove any leading slashes
+    filePath = filePath.replace(/^\/+/, '');
+    
+    if (!filePath) {
       throw new Error("Invalid media path provided");
     }
+    
+    console.log("[MediaFn] Final filePath for signing:", filePath);
     
     const { data: signedData, error } = await supabaseAdmin.storage
       .from("product-media")
