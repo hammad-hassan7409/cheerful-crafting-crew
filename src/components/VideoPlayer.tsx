@@ -131,6 +131,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
         {src && (
           <video
             ref={videoRef}
+            key={src} // Add key back to force re-render when src changes to a valid URL
             className="w-full h-full object-contain bg-zinc-900"
             onPlay={() => {
               setIsPlaying(true);

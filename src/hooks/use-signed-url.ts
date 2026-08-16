@@ -21,12 +21,12 @@ export function useSignedUrl(path: string | null | undefined) {
       return;
     }
 
-    // Force signed URL for all storage objects, even if they look like public URLs
-    // (This ensures private buckets work correctly)
-    // if (path.includes('/storage/v1/object/public/')) {
-    //   setUrl(path);
-    //   return;
-    // }
+    // If it's already a working signed URL from Supabase, don't re-sign it
+    // This prevents double signing and potential path extraction issues
+    if (path.includes('.supabase.co/storage/v1/object/sign/')) {
+      setUrl(path);
+      return;
+    }
 
     // Check cache
     const cached = urlCache[path];
