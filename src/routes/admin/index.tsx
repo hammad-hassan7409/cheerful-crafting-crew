@@ -2,9 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Trash2, Edit, Pin, PinOff } from "lucide-react";
+import { Trash2, Edit, Pin, PinOff, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { updatePinOrder } from "@/lib/pin-ordering.functions";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 export const Route = createFileRoute("/admin/")({
   component: AdminDashboard,
@@ -12,6 +16,8 @@ export const Route = createFileRoute("/admin/")({
 
 function AdminDashboard() {
   const queryClient = useQueryClient();
+  const updatePin = useServerFn(updatePinOrder);
+  const [updatingPinId, setUpdatingPinId] = useState<string | null>(null);
 
   const { data: products, isLoading } = useQuery({
     queryKey: ["products"],
@@ -27,22 +33,18 @@ function AdminDashboard() {
     },
   });
 
-  const togglePinMutation = useMutation({
-    mutationFn: async ({ id, is_pinned }: { id: string; is_pinned: boolean }) => {
-      const { error } = await supabase
-        .from("products")
-        .update({ is_pinned: !is_pinned, pin_order: !is_pinned ? 0 : 0 })
-        .eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Product pinning updated");
+  const handleUpdatePinOrder = async (productId: string, newOrder: number) => {
+    setUpdatingPinId(productId);
+    try {
+      await updatePin({ data: { productId, newOrder } });
+      toast.success("Pin order updated");
       queryClient.invalidateQueries({ queryKey: ["products"] });
-    },
-    onError: (error: any) => {
-      toast.error(error.message);
-    },
-  });
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update pin order");
+    } finally {
+      setUpdatingPinId(null);
+    }
+  };
 
   const deleteMutation = useMutation({
     mutationFn: async (product: any) => {
@@ -94,6 +96,7 @@ function AdminDashboard() {
               <th className="px-4 py-3">Product</th>
               <th className="px-4 py-3">Category</th>
               <th className="px-4 py-3">Price</th>
+              <th className="px-4 py-3">Pin Order</th>
               <th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
@@ -116,17 +119,32 @@ function AdminDashboard() {
                     RS. {product.original_price}
                   </span>
                 </td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      min="0"
+                      className="w-16 h-8 text-xs"
+                      defaultValue={product.pin_order || 0}
+                      onBlur={(e) => {
+                        const val = parseInt(e.target.value);
+                        if (val !== (product.pin_order || 0)) {
+                          handleUpdatePinOrder(product.id, val);
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          const val = parseInt((e.target as HTMLInputElement).value);
+                          handleUpdatePinOrder(product.id, val);
+                        }
+                      }}
+                      disabled={updatingPinId === product.id}
+                    />
+                    <span className="text-[10px] text-muted-foreground">(0 = unpinned)</span>
+                  </div>
+                </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex justify-end gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={product.is_pinned ? "text-primary" : "text-muted-foreground"}
-                      onClick={() => togglePinMutation.mutate({ id: product.id, is_pinned: !!product.is_pinned })}
-                      title={product.is_pinned ? "Unpin from home" : "Pin to home"}
-                    >
-                      {product.is_pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
-                    </Button>
                     <Button variant="ghost" size="icon" asChild>
                       <Link to="/admin/products/$productId" params={{ productId: product.id }}>
                         <Edit className="h-4 w-4" />
