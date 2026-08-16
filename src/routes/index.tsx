@@ -337,19 +337,36 @@ function Index() {
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 md:gap-6">
-                {categoryProducts.map((product: any) => (
-                  <Link 
-                    key={product.id} 
-                    to="/products/$productId" 
-                    params={{ productId: product.id }}
-                    className="block outline-none"
-                  >
-                    <ProductCard 
-                      product={product} 
-                      whatsappNumber={settings?.["whatsapp_number"]}
-                    />
-                  </Link>
-                ))}
+                {categoryProducts
+                  .sort((a, b) => {
+                    // Pinned products first
+                    const aPinned = a.is_pinned && a.pin_order > 0;
+                    const bPinned = b.is_pinned && b.pin_order > 0;
+                    
+                    if (aPinned && !bPinned) return -1;
+                    if (!aPinned && bPinned) return 1;
+                    
+                    // If both pinned, sort by pin_order
+                    if (aPinned && bPinned) {
+                      return (a.pin_order || 0) - (b.pin_order || 0);
+                    }
+                    
+                    // If both unpinned, preserve original order (created_at DESC)
+                    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+                  })
+                  .map((product: any) => (
+                    <Link 
+                      key={product.id} 
+                      to="/products/$productId" 
+                      params={{ productId: product.id }}
+                      className="block outline-none"
+                    >
+                      <ProductCard 
+                        product={product} 
+                        whatsappNumber={settings?.["whatsapp_number"]}
+                      />
+                    </Link>
+                  ))}
               </div>
             </section>
           );
