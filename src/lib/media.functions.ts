@@ -9,75 +9,53 @@ export const getSignedUrl = createServerFn({ method: "GET" })
     let filePath: string = data.path;
     
     // Improved path extraction logic
-    console.log("[MediaFn] Original path:", filePath);
     if (filePath.startsWith('http')) {
       try {
         const url = new URL(filePath);
-        // Look for the bucket name in the path
         const bucketToken = '/product-media/';
         const index = url.pathname.indexOf(bucketToken);
         
         if (index !== -1) {
           filePath = url.pathname.substring(index + bucketToken.length);
         } else {
-          // Fallback parsing for different URL structures
           const parts = url.pathname.split('/');
           const bucketIndex = parts.indexOf('product-media');
           if (bucketIndex !== -1 && bucketIndex < parts.length - 1) {
             filePath = parts.slice(bucketIndex + 1).join('/');
           } else {
-            // Check if it's a signed URL or public URL with storage path
-            // Example: .../storage/v1/object/sign/product-media/filename.mp4
-            const signIndex = url.pathname.indexOf('/sign/product-media/');
-            if (signIndex !== -1) {
-              filePath = url.pathname.substring(signIndex + '/sign/product-media/'.length);
-            } else {
-              filePath = parts[parts.length - 1]!;
-            }
+            console.log("[MediaFn] Final fallback path extraction:", filePath);
           }
         }
       } catch (e) {
         console.error("[MediaFn] Error parsing media URL:", e);
       }
     }
-    console.log("[MediaFn] Extracted filePath:", filePath);
     
     // Clean up query parameters and URL encoding
-    // Use a more robust split to handle multiple ? or complex characters
-    const pathWithoutQuery = filePath.includes('?') ? filePath.substring(0, filePath.indexOf('?')) : filePath;
-    filePath = decodeURIComponent(pathWithoutQuery);
+    const pathWithoutQuery = filePath.split('?')[0];
+    filePath = decodeURIComponent(pathWithoutQuery!);
     
-    // Final check for bucket name in the cleaned path to ensure we don't include it
-    // Some URLs might have /product-media/ in the path even after cleaning
+    // Remove bucket name and leading slashes
     if (filePath.includes('product-media/')) {
-      const parts = filePath.split('product-media/');
-      filePath = parts[parts.length - 1]!;
+      filePath = filePath.split('product-media/').pop()!;
     }
-    
-    // Remove any leading slashes
     filePath = filePath.replace(/^\/+/, '');
     
     if (!filePath) {
-      throw new Error("Invalid media path provided");
+      return null;
     }
     
-    console.log("[MediaFn] Final filePath for signing:", filePath);
-    
-    const { data: signedData, error } = await supabaseAdmin.storage
-      .from("product-media")
-      .createSignedUrl(filePath, 21600); // 6 hours to reduce re-fetching and 403s during long sessions
+    try {
+      const { data: signedData, error } = await supabaseAdmin.storage
+        .from("product-media")
+        .createSignedUrl(filePath, 21600);
 
-    if (error || !signedData?.signedUrl) {
-      console.error("[MediaFn] Signed URL error:", error, "Path:", filePath);
-      if (error?.message?.includes('Object not found') || (error as any)?.status === 404) {
+      if (error) {
         return null;
       }
-      throw new Error(`Failed to generate access to media: ${error?.message || 'Unknown error'}`);
+      
+      return signedData?.signedUrl || null;
+    } catch (err) {
+      return null;
     }
-
-    return signedData.signedUrl;
   });
-
-
-
-
