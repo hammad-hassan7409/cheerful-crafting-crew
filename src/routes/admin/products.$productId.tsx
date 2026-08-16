@@ -3,7 +3,7 @@ import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Trash2, X, Loader2, ImageIcon, HardDrive, FileText } from "lucide-react";
+import { Trash2, X, Loader2, ImageIcon, HardDrive, FileText, Pin } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -127,7 +127,7 @@ function ProductFormPage() {
       }
     },
     onSuccess: async (data, variables) => {
-      const prodId = isNew ? data[0].id : productId;
+      const prodId = isNew ? (data as any)[0].id : productId;
       
       // If pin order was changed, apply the reordering logic
       if (variables.pin_order !== undefined) {
@@ -504,7 +504,7 @@ function ProductFormPage() {
               <span className="text-xs font-medium text-muted-foreground">0 = Not Pinned</span>
             </div>
           </div>
-          {form.watch("pin_order") > 0 && (
+          {form.watch("pin_order") !== undefined && form.watch("pin_order")! > 0 && (
             <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/5 px-3 py-2 rounded-md border border-primary/10">
               <Pin className="h-3 w-3 fill-current" />
               Pinned at position #{form.watch("pin_order")}
