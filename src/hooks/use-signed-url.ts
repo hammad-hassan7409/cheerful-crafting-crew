@@ -23,7 +23,10 @@ export function useSignedUrl(path: string | null | undefined) {
 
     // If it's already a working signed URL from Supabase, don't re-sign it
     // This prevents double signing and potential path extraction issues
-    if (path.includes('.supabase.co/storage/v1/object/sign/')) {
+    // Check for common Supabase signed URL patterns
+    if (path.includes('.supabase.co/storage/v1/object/sign/') || 
+        path.includes('token=') || 
+        (path.startsWith('http') && path.includes('/sign/'))) {
       setUrl(path);
       return;
     }

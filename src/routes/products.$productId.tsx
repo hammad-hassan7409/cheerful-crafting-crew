@@ -236,7 +236,6 @@ function ProductDetailPage() {
                     <VideoPlayer 
                       src={signedUrl} 
                       className="w-full" 
-                      poster={signedUrl} // Use signed URL as poster to show something immediately
                     />
                   ) : (
                     <img
