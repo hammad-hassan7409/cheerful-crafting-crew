@@ -43,22 +43,33 @@ export const getSignedUrl = createServerFn({ method: "GET" })
     console.log("[MediaFn] Extracted filePath:", filePath);
     
     // Clean up query parameters and URL encoding
-    // Use a more robust split to handle multiple ? or complex characters
-    const pathWithoutQuery = filePath.includes('?') ? filePath.substring(0, filePath.indexOf('?')) : filePath;
-    filePath = decodeURIComponent(pathWithoutQuery);
+    const pathWithoutQuery = filePath.split('?')[0];
+    filePath = decodeURIComponent(pathWithoutQuery!);
     
-    // Final check for bucket name in the cleaned path to ensure we don't include it
-    // Some URLs might have /product-media/ in the path even after cleaning
-    if (filePath.includes('product-media/')) {
-      const parts = filePath.split('product-media/');
-      filePath = parts[parts.length - 1]!;
-    }
-    
-    // Remove any leading slashes
-    filePath = filePath.replace(/^\/+/, '');
+    // Remove bucket name and leading slashes
+    filePath = filePath.replace(/.*product-media\//, '').replace(/^\/+/, '');
     
     if (!filePath) {
-      throw new Error("Invalid media path provided");
+      console.error("[MediaFn] Empty filePath after cleaning");
+      return null;
+    }
+    
+    console.log("[MediaFn] Final filePath for signing:", filePath);
+    
+    try {
+      const { data: signedData, error } = await supabaseAdmin.storage
+        .from("product-media")
+        .createSignedUrl(filePath, 21600);
+
+      if (error) {
+        console.error("[MediaFn] Supabase signing error:", error.message, "Path:", filePath);
+        return null;
+      }
+      
+      return signedData?.signedUrl || null;
+    } catch (err) {
+      console.error("[MediaFn] Unexpected error during signing:", err);
+      return null;
     }
     
     console.log("[MediaFn] Final filePath for signing:", filePath);
