@@ -13,11 +13,6 @@ export const getSignedUrl = createServerFn({ method: "GET" })
       try {
         const url = new URL(filePath);
         const bucketName = 'product-media';
-        
-        // Handle various URL formats (public, signed, or storage API)
-        // 1. Check for /object/public/bucket/path
-        // 2. Check for /object/sign/bucket/path
-        // 3. Check for bucket name in path
         const pathname = url.pathname;
         const bucketToken = `/${bucketName}/`;
         const index = pathname.indexOf(bucketToken);
@@ -25,7 +20,6 @@ export const getSignedUrl = createServerFn({ method: "GET" })
         if (index !== -1) {
           filePath = pathname.substring(index + bucketToken.length);
         } else {
-          // Fallback: split and look for bucket index
           const parts = pathname.split('/');
           const bucketIndex = parts.indexOf(bucketName);
           if (bucketIndex !== -1 && bucketIndex < parts.length - 1) {
@@ -37,31 +31,19 @@ export const getSignedUrl = createServerFn({ method: "GET" })
       }
     }
     
-    // Clean up query parameters and URL encoding
     const pathWithoutQuery = filePath.split('?')[0];
     filePath = decodeURIComponent(pathWithoutQuery!);
-    
-    // Remove bucket name if still present and leading slashes
     filePath = filePath.replace(/^.*?product-media\//, '').replace(/^\/+/, '');
     
-    if (!filePath) {
-      console.error("[MediaFn] No valid file path extracted for signing");
-      return null;
-    }
+    if (!filePath) return null;
     
     try {
       const { data: signedData, error } = await supabaseAdmin.storage
         .from("product-media")
-        .createSignedUrl(filePath, 21600); // 6 hours
+        .createSignedUrl(filePath, 21600);
 
-      if (error) {
-        console.error("[MediaFn] Supabase signing error:", error.message, "Path:", filePath);
-        return null;
-      }
-      
       return signedData?.signedUrl || null;
     } catch (err) {
-      console.error("[MediaFn] Unexpected error during signing:", err);
       return null;
     }
   });
