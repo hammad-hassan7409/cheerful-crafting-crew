@@ -18,16 +18,22 @@ export function useSignedUrl(path: string | null | undefined) {
   useEffect(() => {
     if (!path) {
       setUrl(null);
+      setIsLoading(false);
       return;
     }
 
-    // If it's already a working signed URL from Supabase, don't re-sign it
-    // This prevents double signing and potential path extraction issues
-    // Check for common Supabase signed URL patterns
-    if (path.includes('.supabase.co/storage/v1/object/sign/') || 
-        path.includes('token=') || 
-        (path.startsWith('http') && path.includes('/sign/'))) {
+    // Check if path is already a valid signed URL or public URL that shouldn't be signed
+    // We only want to sign if it doesn't look like a signed URL already
+    const isAlreadySigned = path.includes('/sign/') || 
+                            path.includes('token=') || 
+                            (path.startsWith('http') && path.includes('.supabase.co/storage/v1/object/'));
+    
+    // But even if it looks signed, we might want to re-sign if it's nearing expiration
+    // For now, if it's already a full URL, we'll try to use it directly first
+    // If it fails, the error handler in VideoPlayer/Image should ideally trigger a retry
+    if (isAlreadySigned && path.startsWith('http')) {
       setUrl(path);
+      setIsLoading(false);
       return;
     }
 
@@ -35,6 +41,7 @@ export function useSignedUrl(path: string | null | undefined) {
     const cached = urlCache[path];
     if (cached && cached.expires > Date.now()) {
       setUrl(cached.url);
+      setIsLoading(false);
       return;
     }
 
@@ -50,9 +57,16 @@ export function useSignedUrl(path: string | null | undefined) {
             url: signedUrl,
             expires: Date.now() + CACHE_DURATION,
           };
+          setUrl(signedUrl);
+        } else {
+          // If signing fails but we have a path, maybe it's a public URL?
+          // We'll set it as is as a fallback
+          setUrl(path);
         }
-        
-        setUrl(signedUrl);
+      })
+      .catch((err) => {
+        console.error("[useSignedUrl] Signing failed:", err);
+        if (active) setUrl(path); // Fallback to raw path
       })
       .finally(() => {
         if (active) setIsLoading(false);
