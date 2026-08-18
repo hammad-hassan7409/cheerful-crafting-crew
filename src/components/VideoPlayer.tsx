@@ -147,7 +147,7 @@ export function VideoPlayer({ src, poster, className }: VideoPlayerProps) {
             preload="auto"
             crossOrigin="anonymous"
           >
-            <source src={src} type="video/mp4" />
+            {src && <source src={src} type="video/mp4" />}
             Your browser does not support the video tag.
           </video>
         )}
