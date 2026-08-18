@@ -77,8 +77,8 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: (options) => {
-    const queryClient = (options as any).context?.queryClient;
-    const settings = queryClient?.getQueryData<Record<string, any>>(["settings"]);
+    const queryClient = (options as any).context?.queryClient as QueryClient | undefined;
+    const settings = queryClient?.getQueryData(["settings"]) as Record<string, any> | undefined;
     const logoUrl = settings?.["logo_url"];
 
     return {
