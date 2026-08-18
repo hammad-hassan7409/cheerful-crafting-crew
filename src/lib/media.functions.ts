@@ -8,22 +8,22 @@ export const getSignedUrl = createServerFn({ method: "GET" })
     
     let filePath: string = data.path;
     
-    // Improved path extraction logic
+    // Hardened path extraction logic
     if (filePath.startsWith('http')) {
       try {
         const url = new URL(filePath);
-        const bucketToken = '/product-media/';
-        const index = url.pathname.indexOf(bucketToken);
+        const bucketName = 'product-media';
+        const pathname = url.pathname;
+        const bucketToken = `/${bucketName}/`;
+        const index = pathname.indexOf(bucketToken);
         
         if (index !== -1) {
-          filePath = url.pathname.substring(index + bucketToken.length);
+          filePath = pathname.substring(index + bucketToken.length);
         } else {
-          const parts = url.pathname.split('/');
-          const bucketIndex = parts.indexOf('product-media');
+          const parts = pathname.split('/');
+          const bucketIndex = parts.indexOf(bucketName);
           if (bucketIndex !== -1 && bucketIndex < parts.length - 1) {
             filePath = parts.slice(bucketIndex + 1).join('/');
-          } else {
-            console.log("[MediaFn] Final fallback path extraction:", filePath);
           }
         }
       } catch (e) {
@@ -31,29 +31,17 @@ export const getSignedUrl = createServerFn({ method: "GET" })
       }
     }
     
-    // Clean up query parameters and URL encoding
     const pathWithoutQuery = filePath.split('?')[0];
     filePath = decodeURIComponent(pathWithoutQuery!);
+    filePath = filePath.replace(/^.*?product-media\//, '').replace(/^\/+/, '');
     
-    // Remove bucket name and leading slashes
-    if (filePath.includes('product-media/')) {
-      filePath = filePath.split('product-media/').pop()!;
-    }
-    filePath = filePath.replace(/^\/+/, '');
-    
-    if (!filePath) {
-      return null;
-    }
+    if (!filePath) return null;
     
     try {
       const { data: signedData, error } = await supabaseAdmin.storage
         .from("product-media")
         .createSignedUrl(filePath, 21600);
 
-      if (error) {
-        return null;
-      }
-      
       return signedData?.signedUrl || null;
     } catch (err) {
       return null;
