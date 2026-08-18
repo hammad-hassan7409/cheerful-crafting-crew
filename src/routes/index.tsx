@@ -288,9 +288,17 @@ function Index() {
       <header className="fixed top-0 z-50 w-full border-b border-border/40 bg-background/60 backdrop-blur-xl">
         <div className="container mx-auto flex h-20 items-center justify-between px-6">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/20 transition-transform group-hover:scale-105">
-              <span className="text-xl font-black text-white italic">AR</span>
-            </div>
+            {settings?.["logo_url"] ? (
+              <img 
+                src={settings["logo_url"]} 
+                alt="AR EDITZ Logo" 
+                className="h-10 w-10 object-contain transition-transform group-hover:scale-105"
+              />
+            ) : (
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/20 transition-transform group-hover:scale-105">
+                <span className="text-xl font-black text-white italic">AR</span>
+              </div>
+            )}
             <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
               EDITZ
             </span>
@@ -382,9 +390,17 @@ function Index() {
       <footer className="border-t border-border/40 py-12 bg-card/30">
         <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-sm font-black text-white italic">AR</span>
-            </div>
+            {settings?.["logo_url"] ? (
+              <img 
+                src={settings["logo_url"]} 
+                alt="AR EDITZ Logo" 
+                className="h-8 w-8 object-contain"
+              />
+            ) : (
+              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+                <span className="text-sm font-black text-white italic">AR</span>
+              </div>
+            )}
             <span className="font-bold tracking-tight">EDITZ</span>
           </div>
           <p className="text-sm text-muted-foreground">
