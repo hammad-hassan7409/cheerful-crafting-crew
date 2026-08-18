@@ -320,11 +320,11 @@ function Index() {
       <main className="container mx-auto px-4 md:px-6 pt-24 md:pt-32 pb-20">
         <div className="mb-12 md:mb-20 max-w-2xl">
           <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-4 md:mb-6">
-            Creative <span className="text-primary italic">Editing</span> Showcase
+            AR <span className="text-primary italic">EDITZ</span> PREMIUM
           </h1>
           <p className="text-xl text-muted-foreground leading-relaxed">
-            A curated portfolio of professional video edits and poster designs. 
-            Browse samples and contact the editor for your next project.
+            A curated portfolio of premium video edits and poster designs. 
+            Browse elite samples and contact the editor for your next project.
           </p>
         </div>
 
