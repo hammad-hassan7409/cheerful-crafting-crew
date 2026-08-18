@@ -85,8 +85,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       meta: [
         { charSet: "utf-8" },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
-        { title: "AR EDITZ | Professional Video & Poster Edits" },
-        { name: "description", content: "Professional video editing and poster design services by AR EDITZ." },
+        { title: "AR EDITZ | Premium Video & Poster Edits" },
+        { name: "description", content: "Premium video editing and poster design services by AR EDITZ." },
         { name: "author", content: "AR EDITZ" },
         { property: "og:title", content: "AR EDITZ" },
         { property: "og:description", content: "Professional video editing and poster design services." },
