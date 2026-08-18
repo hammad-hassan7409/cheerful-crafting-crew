@@ -9,6 +9,8 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -74,27 +76,37 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
-    ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
-    ],
-  }),
+  head: (context) => {
+    const queryClient = context.context.queryClient;
+    const settings = queryClient.getQueryData<Record<string, any>>(["settings"]);
+    const logoUrl = settings?.["logo_url"];
+
+    return {
+      meta: [
+        { charSet: "utf-8" },
+        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        { title: "AR EDITZ | Professional Video & Poster Edits" },
+        { name: "description", content: "Professional video editing and poster design services by AR EDITZ." },
+        { name: "author", content: "AR EDITZ" },
+        { property: "og:title", content: "AR EDITZ" },
+        { property: "og:description", content: "Professional video editing and poster design services." },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:site", content: "@AREditz" },
+      ],
+      links: [
+        {
+          rel: "stylesheet",
+          href: appCss,
+        },
+        { 
+          rel: "icon", 
+          href: logoUrl || "/favicon.ico", 
+          type: logoUrl ? (logoUrl.endsWith('.png') ? "image/png" : logoUrl.endsWith('.svg') ? "image/svg+xml" : "image/x-icon") : "image/x-icon" 
+        },
+      ],
+    };
+  },
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,

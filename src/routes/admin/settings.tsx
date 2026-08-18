@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, KeyRound, Share2, MessageSquare, Video } from "lucide-react";
+import { Loader2, KeyRound, Share2, MessageSquare, Video, Upload, Trash2, Image as ImageIcon } from "lucide-react";
 import { listAdminUsers } from "@/lib/admin.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -40,13 +40,74 @@ function AdminSettings() {
 
   const [whatsapp, setWhatsapp] = useState("");
   const [tiktok, setTiktok] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   useEffect(() => {
     if (settings) {
       setWhatsapp(settings["whatsapp_number"] || "");
       setTiktok(settings["tiktok_url"] || "");
+      setLogoUrl(settings["logo_url"] || "");
     }
   }, [settings]);
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    setUploadingLogo(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `logo-${Date.now()}.${fileExt}`;
+      const filePath = `logos/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("product-media")
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("product-media")
+        .getPublicUrl(filePath);
+
+      // Save to settings table
+      const { error: settingsError } = await supabase
+        .from("settings")
+        .upsert({ key: "logo_url", value: publicUrl }, { onConflict: "key" });
+
+      if (settingsError) throw settingsError;
+
+      setLogoUrl(publicUrl);
+      queryClient.invalidateQueries({ queryKey: ["settings"] });
+      toast.success("Logo uploaded and set as favicon successfully");
+    } catch (error: any) {
+      toast.error("Failed to upload logo: " + error.message);
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleRemoveLogo = async () => {
+    try {
+      const { error } = await supabase
+        .from("settings")
+        .upsert({ key: "logo_url", value: "" }, { onConflict: "key" });
+
+      if (error) throw error;
+
+      setLogoUrl("");
+      queryClient.invalidateQueries({ queryKey: ["settings"] });
+      toast.success("Logo removed");
+    } catch (error: any) {
+      toast.error("Failed to remove logo: " + error.message);
+    }
+  };
 
   const updateSettingsMutation = useMutation({
     mutationFn: async ({ whatsapp, tiktok }: { whatsapp: string; tiktok: string }) => {
@@ -168,6 +229,64 @@ function AdminSettings() {
         <h1 className="text-3xl font-bold tracking-tight text-primary">Settings</h1>
         <p className="text-muted-foreground">Manage your admin account and portal access.</p>
       </div>
+
+      <Card className="bg-card/50 border-border/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ImageIcon className="h-5 w-5 text-primary" />
+            Website Logo & Favicon
+          </CardTitle>
+          <CardDescription>
+            Upload your logo. It will be displayed in the header, footer, and used as the website favicon.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {logoUrl ? (
+              <div className="flex flex-col items-center gap-4 p-6 rounded-xl border border-border/50 bg-background/50">
+                <img 
+                  src={logoUrl} 
+                  alt="Website Logo" 
+                  className="h-20 w-auto object-contain"
+                />
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={handleRemoveLogo}
+                  className="flex items-center gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Remove Logo
+                </Button>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center p-8 rounded-xl border-2 border-dashed border-border/50 bg-background/20">
+                <label className="flex flex-col items-center gap-2 cursor-pointer">
+                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Upload className="h-6 w-6 text-primary" />
+                  </div>
+                  <span className="text-sm font-medium">Click to upload logo</span>
+                  <span className="text-xs text-muted-foreground">PNG, SVG or ICO (Square recommended)</span>
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    accept="image/*" 
+                    onChange={handleLogoUpload}
+                    disabled={uploadingLogo}
+                  />
+                </label>
+              </div>
+            )}
+            
+            {uploadingLogo && (
+              <div className="flex items-center gap-2 text-sm text-primary animate-pulse justify-center">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Uploading your logo...
+              </div>
+            ) }
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="bg-card/50 border-border/50">
         <CardHeader>
